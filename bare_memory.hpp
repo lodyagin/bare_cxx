@@ -46,6 +46,13 @@ public:
   constexpr static size_t size_in_bytes = 
     (n_bits - 1) / sizeof(word_t) + 1;
 
+  constexpr static size_t reserved_in_bits = 
+    size_in_bytes * 8;
+
+  static_assert 
+	 (reserved_in_bits >= n_bits, 
+	  "bitmap: reserved_in_bits >= n_bits failed");
+
   //! A size in bits of a cell to store an index of bit
   //! inside word_t
   constexpr static uint8_t bit_idx_size = 
@@ -108,7 +115,9 @@ public:
     // TODO test with overlapping bitmaps
     bool is_same (const reference& b) const noexcept
     {
-      if (bit_addr.shift != b.bit_addr.shift)
+      if (bit_addr.shift != b.bit_addr.shift
+          || __builtin_expect
+               (bit_addr.carry != b.bit_addr.carry, 0))
         return false;
 
       // assert(bit_distance % sizeof(word_t) % 8 == 0);
@@ -162,7 +171,8 @@ public:
       bit_addr_t(size_t idx) noexcept
         : cell(idx >> bit_idx_size),
           shift(idx - (cell << bit_idx_size)),
-          mask((word_t)1 << shift)
+          mask((word_t)1 << shift),
+			 carry(idx % reserved_in_bits)
       {}
 
       //! It cycles around the area. I think it is more
@@ -173,8 +183,11 @@ public:
       {
         if (__builtin_expect(mask <<= 1, 1) == 0) {
           shift = 0; mask = 1;
-          if (__builtin_expect(++cell > size_in_bytes - 1, 0)) {
+          if (__builtin_expect
+				   (++cell > size_in_bytes - 1, 0)) 
+          {
             cell = 0;
+				++carry;
           }
         }
         else {
@@ -188,8 +201,10 @@ public:
       {
         if (__builtin_expect(mask >>= 1, 1) == 0) {
           shift = 0; mask = (word_t) 1 << bit_idx_size - 1;
-          if (__builtin_expect(cell-- == 0, 0)) {
+          if (__builtin_expect(cell-- == 0, 0)) 
+			 {
             cell = size_in_bytes - 1;
+				--carry;
           }
         }
         else {
@@ -205,7 +220,9 @@ public:
           n & n_bits_mask<bit_idx_size>;
         shift += shift_add;
         rol(mask, shift_add);
-        (cell += n) %= size_in_bytes;
+        auto div = std::div(cell + n, size_in_bytes);
+		  cell = div.rem;
+		  carry = div.quot;
         return &this;
       }
 
@@ -213,13 +230,16 @@ public:
       ptrdiff_t operator - (const bit_addr_t& b) const
         noexcept
       {
-        return (cell - b.cell) * sizeof(word_t) * 8
+        return (carry - b.carry) * reserved_in_bits
+          + (cell - b.cell) * sizeof(word_t) * 8
           + shift - b.shift;
       }
 
       size_t cell;
       uint8_t shift;
       word_t mask;
+		// incremented or decremented with overlapping
+		int8_t carry : bit_idx_size;
     } bit_addr;
   };
 
@@ -341,18 +361,76 @@ public:
 
   typedef const iterator const_iterator;
 
+  bitmap() noexcept : bm(bm_), end_it(begin()) {}
+
+  // TODO do not need deep copy bm_ if bm != bm_ 
+  bitmap(const bitmap& b) noexcept = default;
+
+  // TODO do not need deep copy bm_ if bm != bm_ 
+  bitmap& operator=(const bitmap& b) noexcept = default;
+
+  //! Need skip not used bits in the last cell
+  bool operator == (const bitmap&) noexcept = delete;
+
+  //! Need skip not used bits in the last cell
+  bool operator != (const bitmap&) noexcept = delete;
+
+  // disabled for safety
+  // void swap(bitmap& b) ?noexcept
+  
+  size_type size() const noexcept
+  {
+	 const size_t sz = end() - begin();
+	 if (__builtin_expect(sz <= n_bits, 1))
+		return sz;
+	 else
+		return max_size();
+  }
+
+  size_type max_size() const noexcept
+  {
+	 return n_bits;
+  }
+
+  bool empty() const noexcept
+  {
+	 return begin() == end();
+  }
+
   iterator begin() noexcept
   {
     return iterator(bm, 0);
   }
 
+  const_iterator begin() const noexcept
+  {
+    return iterator(bm, 0);
+  }
+
+  const_iterator cbegin() noexcept
+  {
+	 return const_cast<const bitmap*>(this)->begin();
+  }
+
   iterator end() noexcept
   {
-    return iterator(bm, n_bits + 1);
+    return end_it;
+  }
+
+  const_iterator end() const noexcept
+  {
+    return end_it;
+  }
+
+  const_iterator cend() noexcept
+  {
+	 return const_cast<const bitmap*>(this)->end();
   }
 
 private:
-  word_t bm[size_in_bytes];
+  word_t bm_[size_in_bytes];
+  word_t* bm;
+  iterator end_it;
 };
 
 template<size_t n_bits, class word_t = uintmax_t>

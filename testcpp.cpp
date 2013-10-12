@@ -10,4 +10,5 @@ int main(int argc, char* argv[]) noexcept
   for(auto bit : b)
     bit = 1;
 
+  bitmap<max_n> c = b;
 }
