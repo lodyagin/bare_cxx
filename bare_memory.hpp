@@ -20,17 +20,15 @@ struct log2x<1>
   enum { value = 0 };
 };
 
-template<size_t n_bits>
+template<size_t n_bits, class word_t = uintmax_t>
 class bitmap
 {
-  typedef uintmax_t word_t;
-
-  word_t bm[(n_bits - 1) / sizeof(word_t) + 1] = {0};
-
 public:
+  constexpr size_t size_in_bytes = 
+    (n_bits - 1) / sizeof(word_t) + 1;
+    
   class reference
   {
-    friend bitmap;
     friend class iterator;
   public:
     //! Assigns a value to the referenced bit.
@@ -46,6 +44,16 @@ public:
     {
       bit_addr = r.bit_addr;
       return *this;
+    }
+
+    bool operator == (const reference& b) const noexcept
+    {
+      return (bool)*this == (bool) b;
+    }
+  
+    bool operator != (const reference& b) const noexcept
+    {
+      return !operator==(b);
     }
 
     //! Returns the value of the referenced bit. 
@@ -66,15 +74,59 @@ public:
       m[bit_addr.cell] ^= bit_addr.mask;
       return *this;
     }
-
+  
   private:
-    reference(word_t* bm_ptr, size_t bit_idx) 
+    reference(word_t* bm_ptr, size_t bit_idx) noexcept
       : m(bm_ptr), bit_addr(bit_idx) {};
 
-    reference& operator++ ()
+    // TODO test with overlapping bitmaps
+    bool is_same (const reference& b) const noexcept
+    {
+      if (bit_addr.shift != b.bit_addr.shift)
+        return false;
+
+      // assert(bit_distance % sizeof(word_t) % 8 == 0);
+      const ptrdiff_t word_distance = 
+        bit_addr - b.bit_addr >> bit_idx_size;
+      return word_distance == m - b.m;
+    }
+
+    bool is_less (const reference& b) const noexcept
+    {
+      return *this - b < 0;
+    }
+
+    bool is_greater (const reference& b) const noexcept
+    {
+      return *this - b > 0;
+    }
+
+    bool is_less_equal (const reference& b) const noexcept
+    {
+      return *this - b <= 0;
+    }
+
+    bool is_greater_equal (const reference& b) const noexcept
+    {
+      return *this - b >= 0;
+    }
+
+    void forward(ptrdiff_t n) noexcept
+    {
+      bit_addr += n;
+    }
+
+    reference& operator++ () noexcept
     {
       ++bit_addr;
       return *this;
+    }
+
+    // TODO test with overlapping bitmaps
+    ptrdiff_t operator - (const reference& b) const
+      noexcept
+    {
+      return bit_addr - b.bit_addr + (m - b.m << bit_idx_size);
     }
 
     word_t* m;
@@ -87,22 +139,62 @@ public:
       //! A size in bits of a cell to store an index of bit inside word_t
       constexpr static uint8_t bit_idx_size = bit_idx_size_<word_t>::value;
 
-      bit_addr_t(size_t idx)
+      bit_addr_t(size_t idx) noexcept
         : cell(idx >> bit_idx_size),
           shift(idx - (cell << bit_idx_size)),
           mask((word_t)1 << shift)
       {}
 
-      bit_addr_t& operator ++ ()
+      //! It cycles around the area. I think it is more
+      //! safe has an infinite loop than has a data
+      //! corruption. <NB> it covers also unused bits (in
+      //! a case n_bits % sizeof(word_t) % 8 != 0
+      bit_addr_t& operator ++ () noexcept
       {
-        // TODO add unlikely
-        if ((mask <<= 1) == 0) {
-          cell++; shift = 0; mask = 1;
+        if (__builtin_expect(mask <<= 1, 1) == 0) {
+          shift = 0; mask = 1;
+          if (__builtin_expect(++cell > size_in_bytes - 1, 0)) {
+            cell = 0;
+          }
         }
         else {
-          shift++;
+          ++shift;
         }
         return *this;
+      }
+
+      //! See the notes for operator++()
+      bit_addr_t& operator -- () noexcept
+      {
+        if (__builtin_expect(mask >>= 1, 1) == 0) {
+          shift = 0; mask = (word_t) 1 << bit_idx_size - 1;
+          if (__builtin_expect(cell-- == 0, 0)) {
+            cell = size_in_bytes - 1;
+          }
+        }
+        else {
+          --shift;
+        }
+        return *this;
+      }
+
+      // TODO test with negative values
+      bit_addr_t& operator += (ptrdiff_t n) noexcept
+      {
+        const int8_t shift_add = 
+          n & n_bits_mask(bit_idx_size);
+        shift += shift_add;
+        rol(mask, shift_add);
+        (cell += n) %= size_in_bytes;
+        return &this;
+      }
+
+      // TODO test for negative values
+      ptrdiff_t operator - (const bit_addr_t& b) const
+        noexcept
+      {
+        return (cell - b.cell) * sizeof(word_t) * 8
+          + shift - b.shift;
       }
 
       size_t cell;
@@ -120,13 +212,117 @@ public:
   {
     friend bitmap;
   public:
+    bool operator == (const iterator& b) const noexcept
+    { 
+      return ref.is_same(b.ref);
+    }
+  
+    bool operator != (const iterator& b) const noexcept
+    {
+      return !operator==(b);
+    }
+
+    bool operator < (const iterator& b) const noexcept
+    {
+      return ref.is_less(b.ref);
+    }
+
+    bool operator > (const iterator& b) const noexcept
+    {
+      return ref.is_greater(b.ref);
+    }
+
+    bool operator <= (const iterator& b) const noexcept
+    {
+      return ref.is_less_equal(b.ref);
+    }
+
+    bool operator >= (const iterator& b) const noexcept
+    {
+      return ref.is_greater_equal(b.ref);
+    }
+
     reference operator * () noexcept { return ref; }
+
     const_reference operator * () const noexcept { return ref; }
-    iterator& operator ++ () noexcept { ++ref; return *this; }
+
+    iterator& operator ++ () noexcept 
+    { 
+      ++ref; 
+      return *this; 
+    }
+
+    iterator operator ++ (int) noexcept 
+    { 
+      iterator res(*this);
+      ++(*this);
+      return res; 
+    }
+
+    iterator& operator -- () noexcept 
+    { 
+      --ref; 
+      return *this; 
+    }
+
+    iterator operator -- (int) noexcept 
+    { 
+      iterator res(*this);
+      --(*this);
+      return res; 
+    }
+
+    iterator& operator += (ptrdiff_t n) noexcept
+    {
+      ref.forward(n);
+      return *this;
+    }
+
+    iterator& operator -= (ptrdiff_t n) noexcept
+    {
+      ref.forward(-n);
+      return *this;
+    }
+
+    iterator operator + (ptrdiff_t n) const noexcept
+    {
+      iterator copy(*this);
+      return copy += n;
+    }
+
+    iterator operator - (ptrdiff_t n) const noexcept
+    {
+      iterator copy(*this);
+      return copy -= n;
+    }
+
+    ptrdiff_t operator - (const iterator& b) const
+      noexcept
+    {
+      return a.distance(b);
+    }
+
+    reference operator [] (ptrdiff_t n) noexcept
+    {
+      return *(*this + n);
+    }
+
+    const_reference operator [] (ptrdiff_t n) const
+      noexcept 
+    {
+      return *(*this + n);
+    }
+
   private:
     iterator(word_t* bm_ptr, size_t bit_idx) : ref(bm_ptr, bit_idx) {}
     reference ref;
   };
+
+  iterator operator + (ptrdiff_t n, const iterator& it)
+    noexcept
+  {
+    return it.operator+(n);
+  }
 
   typedef const iterator const_iterator;
 
@@ -140,7 +336,8 @@ public:
     return iterator(bm, n_bits + 1);
   }
 
-protected:
+private:
+  word_t bm[size_in_bytes];
 };
 
 template<>
