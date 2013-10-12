@@ -49,14 +49,25 @@ public:
   constexpr static size_t reserved_in_bits = 
     size_in_bytes * 8;
 
+  static_assert
+	 (pow2x<log2x<n_bits>::value>::value == n_bits,
+	  "bitmap: n_bits must be 2^n");
+
+  static_assert
+	 (n_bits % sizeof(word_t) % 8 == 0,
+	  "bitmap: n_bits must be multiple of word_t");
+
   static_assert 
-	 (reserved_in_bits >= n_bits, 
-	  "bitmap: reserved_in_bits >= n_bits failed");
+	 (reserved_in_bits == n_bits, 
+	  "bitmap: reserved_in_bits == n_bits failed");
 
   //! A size in bits of a cell to store an index of bit
   //! inside word_t
   constexpr static uint8_t bit_idx_size = 
 	 log2x<sizeof(word_t)*8>::value;
+
+  //! log2(n_bits)
+  constexpr static log2_n_bits = log2x<n_bits>::value;
 
   class iterator;
 
@@ -161,7 +172,8 @@ public:
     ptrdiff_t operator - (const reference& b) const
       noexcept
     {
-      return bit_addr - b.bit_addr + (m - b.m << bit_idx_size);
+      return bit_addr - b.bit_addr 
+		  + (m - b.m << bit_idx_size);
     }
 
     word_t* m;
@@ -172,7 +184,7 @@ public:
         : cell(idx >> bit_idx_size),
           shift(idx - (cell << bit_idx_size)),
           mask((word_t)1 << shift),
-			 carry(idx % reserved_in_bits)
+			 carry(idx >> log2_n_bits)
       {}
 
       //! It cycles around the area. I think it is more
@@ -217,12 +229,13 @@ public:
       bit_addr_t& operator += (ptrdiff_t n) noexcept
       {
         const int8_t shift_add = 
-          n & n_bits_mask<bit_idx_size>;
+          n & n_bits_mask<bit_idx_size>();
         shift += shift_add;
         rol(mask, shift_add);
-        auto div = std::div(cell + n, size_in_bytes);
-		  cell = div.rem;
-		  carry = div.quot;
+        const size_t div = cell + n; //, size_in_bytes);
+		  cell = div 
+          & n_bits_mask<log2_n_bits-bit_idx_size>();
+		  carry = div >> log2_n_bits - 1;
         return &this;
       }
 
