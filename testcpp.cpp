@@ -1,25 +1,13 @@
 #include "bare_memory.hpp"
-#include <iostream>
 
 using namespace bare;
-using namespace std;
 
-int main(int argc, char* argv[])
+int main(int argc, char* argv[]) noexcept
 {
-  int i;
-  ++i = 1;
-  i++ = 1;
-  
+  const int max_n = 100000;
+  bitmap<max_n> b; // = {0};
 
-  bitmap<8> b8;
+  for(auto bit : b)
+    bit = 1;
 
-  bitmap<8>::iterator it = b8.begin();
-  for (int i = 0; i < 7; i++)
-    *++it = i % 2;
-
-  it = b8.begin();
-  for (int i = 0; i < 7; i++)
-    cout << *++it;
-  cout << endl;
-  return 0;
 }

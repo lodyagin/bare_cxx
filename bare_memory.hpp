@@ -20,13 +20,39 @@ struct log2x<1>
   enum { value = 0 };
 };
 
+template<uint8_t x>
+struct pow2x
+{
+  enum { value = 2 * pow2x<x - 1>::value };
+};
+
+template<>
+struct pow2x<0>
+{
+  enum { value = 1 };
+};
+
+//! Return mask with n lower bits set
+template<uint8_t n, class T>
+constexpr T n_bits_mask()
+{
+  return pow2x<n+1>::value - 1;
+}
+
 template<size_t n_bits, class word_t = uintmax_t>
 class bitmap
 {
 public:
-  constexpr size_t size_in_bytes = 
+  constexpr static size_t size_in_bytes = 
     (n_bits - 1) / sizeof(word_t) + 1;
-    
+
+  //! A size in bits of a cell to store an index of bit
+  //! inside word_t
+  constexpr static uint8_t bit_idx_size = 
+	 log2x<sizeof(word_t)*8>::value;
+
+  class iterator;
+
   class reference
   {
     friend class iterator;
@@ -75,7 +101,7 @@ public:
       return *this;
     }
   
-  private:
+  protected:
     reference(word_t* bm_ptr, size_t bit_idx) noexcept
       : m(bm_ptr), bit_addr(bit_idx) {};
 
@@ -133,12 +159,6 @@ public:
 
     struct bit_addr_t 
     {
-      template<class T>
-      struct bit_idx_size_ { enum { value = log2x<sizeof(T)*8>::value }; };
-
-      //! A size in bits of a cell to store an index of bit inside word_t
-      constexpr static uint8_t bit_idx_size = bit_idx_size_<word_t>::value;
-
       bit_addr_t(size_t idx) noexcept
         : cell(idx >> bit_idx_size),
           shift(idx - (cell << bit_idx_size)),
@@ -182,7 +202,7 @@ public:
       bit_addr_t& operator += (ptrdiff_t n) noexcept
       {
         const int8_t shift_add = 
-          n & n_bits_mask(bit_idx_size);
+          n & n_bits_mask<bit_idx_size>;
         shift += shift_add;
         rol(mask, shift_add);
         (cell += n) %= size_in_bytes;
@@ -299,7 +319,7 @@ public:
     ptrdiff_t operator - (const iterator& b) const
       noexcept
     {
-      return a.distance(b);
+      return distance(b);
     }
 
     reference operator [] (ptrdiff_t n) noexcept
@@ -314,24 +334,19 @@ public:
     }
 
   private:
-    iterator(word_t* bm_ptr, size_t bit_idx) : ref(bm_ptr, bit_idx) {}
+    iterator(word_t* bm_ptr, size_t bit_idx) noexcept
+		: ref(bm_ptr, bit_idx) {}
     reference ref;
   };
 
-  iterator operator + (ptrdiff_t n, const iterator& it)
-    noexcept
-  {
-    return it.operator+(n);
-  }
-
   typedef const iterator const_iterator;
 
-  iterator begin()
+  iterator begin() noexcept
   {
     return iterator(bm, 0);
   }
 
-  iterator end()
+  iterator end() noexcept
   {
     return iterator(bm, n_bits + 1);
   }
@@ -339,6 +354,17 @@ public:
 private:
   word_t bm[size_in_bytes];
 };
+
+template<size_t n_bits, class word_t = uintmax_t>
+typename bitmap<n_bits, word_t>::iterator 
+operator + 
+  (ptrdiff_t n, 
+   const typename bitmap<n_bits, word_t>::iterator& it
+   )  noexcept
+{
+  return it.operator+(n);
+}
+
 
 template<>
 class bitmap<0> {};
