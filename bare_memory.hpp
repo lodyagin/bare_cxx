@@ -1,13 +1,11 @@
 #ifndef BARE_MEMORY_HPP
 #define BARE_MEMORY_HPP
 
-#include <cstdint>
-
-typedef uint64_t size_t;
-typedef int64_t ptrdiff_t;
+#include <cstddef>
 
 namespace bare {
 
+// FIXME add overflow
 template<uintmax_t x>
 struct log2x 
 {
@@ -128,7 +126,8 @@ public:
     {
       if (bit_addr.shift != b.bit_addr.shift
           || __builtin_expect
-               (bit_addr.carry != b.bit_addr.carry, 0))
+               (bit_addr.carry != b.bit_addr.carry, 0)
+          || __builtin_expect(m == b.m, 1))
         return false;
 
       // assert(bit_distance % sizeof(word_t) % 8 == 0);

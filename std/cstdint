@@ -1,0 +1,35 @@
+// -*-coding: mule-utf-8-unix; fill-column: 58 -*-
+/** 
+ * @file
+ *
+ * This file is a part of Bare C++ library. Bare C++ library is a standard
+ * library specially designed for systems without memory protection like
+ * exokernel operating systems.
+ *
+ * @author Sergei Lodyagin <serg@kogorta.dp.ua>
+ * @copyright (C) 2013 Cohors LLC
+ *
+ */
+
+#ifndef _CSTDINT_HEADER_
+#define _CSTDINT_HEADER_
+
+namespace std {
+
+typedef signed char int8_t;
+typedef unsigned char uint8_t;
+
+typedef signed short int16_t;
+typedef unsigned short uint16_t;
+
+typedef signed int int32_t;
+typedef unsigned int uint32_t;
+
+typedef signed long int64_t;
+typedef unsigned long uint64_t;
+
+// TODO fast types
+
+}
+
+#endif

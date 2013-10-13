@@ -1,0 +1,31 @@
+// -*-coding: mule-utf-8-unix; fill-column: 58 -*-
+/** 
+ * @file
+ *
+ * This file is a part of Bare C++ library. Bare C++ library is a standard
+ * library specially designed for systems without memory protection like
+ * exokernel operating systems.
+ *
+ * @author Sergei Lodyagin <serg@kogorta.dp.ua>
+ * @copyright (C) 2013 Cohors LLC
+ *
+ */
+
+#ifndef _CSTDDEF_HEADER_
+#define _CSTDDEF_HEADER_
+
+#include <cstdint>
+
+namespace std {
+
+//! Unsigned integer type returned by the sizeof operator.
+typedef uint64_t size_t;
+
+//! Signed integer type returned when subtracting two
+//! pointers.
+typedef int64_t ptrdiff_t;
+
+}
+
+#endif
+
