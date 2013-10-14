@@ -22,9 +22,7 @@ namespace std {
  * The std::array implementation.
  * It is "cycled", iterator++ at the last cell jumps to
  * start. As a result a difference between two iterators
- * count overlaps. A difference between two iterators for
- * different arrays of the same type is +-INT32_MAX
- * depending of memory order of the arrays.
+ * count overlaps.
  *
  * @author Sergei Lodyagin
  */
@@ -32,52 +30,26 @@ template<class T, std::size_t N>
 class array
 {
   T arr[N];
-  typedef uint_fast32_t index_type;
-  typedef uint32_t smallest_index_type;
+  typedef size_t index_type;
   typedef int8_t carry_type;
+
+  static_assert(N >= 0, "array: N is negative");
 public:
-  constexpr static alien_array_positive_distance = INT64_MAX;
-  constexpr static alien_array_negative_distance = INT64_MIN;
-
-  // <NB> no UINT_FAST32_MAX, to allow a distance
-  // calculation without overflow
-  static_assert(N <= UINT32_MAX,
-                "array: the size is too big");
-
-  static_assert
-    (log2x<8 * (sizeof(smallest_index_type) 
-                + sizeof(carry_type))>
-     < min(alien_array_positive_distance,
-           - alien_array_negative_distance),
-     "array: unable to proper calculate distances");
-
   typedef T value_type;
 //  static_assert(is_destructible<T>, 
 //               "array::value_type must be Destructible");
 
-  class reference
-  {
-  public:
-    T* operator & () noexcept = delete;
-  };
-
-  typedef const reference const_reference;
+  typedef T& reference;
+  typedef const T& const_reference;
   typedef ptrdiff_t difference_type;
   typedef size_t size_type;
-
-  // TODO add const_assert-s on
-  // difference_type/size_type/alien distance relations
-
-  // TODO size_type as smallest_index_type?
 
   class iterator
   {
   public:
     bool operator == (const iterator& b) const noexcept
     { 
-      return idx == b.idx 
-        && __builtin_expect(carry == b.carry, 1)
-        && __builtin_expect(a == b.a, 1);
+      return virtual_ptr() == b.virtual_ptr();
     }
   
     bool operator != (const iterator& b) const noexcept
@@ -107,20 +79,24 @@ public:
 
     reference operator * () noexcept
     {
-      return a[idx];
+      return *ptr;
     }
 
     const_reference operator * () const noexcept
     {
-      return a[idx];
+      return *ptr;
     }
 
     //! A "cycled" implementation. carry is incremented
     //! witch each overlap.
     iterator& operator ++ () noexcept
     {
-      if (__builtin_expect(++idx >= N, 0))
-        ++carry;
+      if (__builtin_expect(++ptr >= a_end, 0))
+      {
+        ptr = a_begin;
+        static_assert(N < UINT64MAX/4, "array: too big");
+        carry += N;
+      }
       return *this;
     }
 
@@ -136,32 +112,25 @@ public:
     difference_type operator - (const iterator& b) const 
       noexcept
     {
-      if (__builtin_expect(a == b.a, 1))
-      {
-        const difference_type diff = ptr() - b.ptr();
-        const int16_t overlaps = carry - b.carry;
-        if (__builtin_expect(overlaps == 0, 1))
-          return diff;
-        else
-          return diff + N * (carry - b.carry);
-      }
-      else if (a < b.a) 
-        return alien_array_negative_distance;
-      else
-        return alien_array_positive_distance;
+      return virtual_ptr() - b.virtual_ptr();
     }
 
   private:
-    iterator(T a_ptr[]) noexcept : a(a_ptr) {}
-
-    const T* ptr() const noexcept
+    iterator(T a_ptr[]) noexcept 
+      : a_begin(a_ptr),
+        a_end(a_ptr + N)
     {
-      return a + idx;
     }
 
-    T * const a;
-    uint_fast32_t idx = 0;
-    int8_t carry;
+    const T* virtual_ptr() const noexcept
+    {
+      return ptr + carry;
+    }
+
+    T* const a_begin;
+    T* const a_end;
+    T* ptr;
+    int64_t carry;
   };
 
   typedef const iterator const_iterator;
