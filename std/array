@@ -91,7 +91,7 @@ public:
     //! witch each overlap.
     iterator& operator ++ () noexcept
     {
-      if (__builtin_expect(++ptr >= a_end, 0))
+      if (__builtin_expect(ptr++ >= a_last, 0))
       {
         ptr = a_begin;
         static_assert(N < UINT64MAX/4, "array: too big");
@@ -102,10 +102,32 @@ public:
 
     //! A "cycled" implementation. carry is incremented
     //! witch each overlap.
-    iterator operator ++ () noexcept
+    iterator operator ++ (int) noexcept
     {
       iterator copy(*this);
       ++(*this);
+      return copy;
+    }
+
+    //! A "cycled" implementation. carry is incremented
+    //! witch each overlap.
+    iterator& operator -- () noexcept
+    {
+      if (__builtin_expect(ptr-- <= a_begin, 0))
+      {
+        ptr = a_last;
+        static_assert(N < UINT64MAX/4, "array: too big");
+        carry -= N;
+      }
+      return *this;
+    }
+
+    //! A "cycled" implementation. carry is incremented
+    //! witch each overlap.
+    iterator operator -- (int) noexcept
+    {
+      iterator copy(*this);
+      --(*this);
       return copy;
     }
 
@@ -118,8 +140,9 @@ public:
   private:
     iterator(T a_ptr[]) noexcept 
       : a_begin(a_ptr),
-        a_end(a_ptr + N)
+        a_last(a_ptr + N - 1)
     {
+      static_assert(N > 0, "array: wrong specialization");
     }
 
     const T* virtual_ptr() const noexcept
@@ -128,7 +151,7 @@ public:
     }
 
     T* const a_begin;
-    T* const a_end;
+    T* const a_last;
     T* ptr;
     int64_t carry;
   };
