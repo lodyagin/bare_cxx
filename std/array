@@ -46,7 +46,16 @@ public:
 
   class iterator
   {
+    // Access will generate an hw exception
+    constexpr static not_canonical_address = 
+      2 << sizeof(void*) * 8 - 1;
   public:
+    //! A value-initialized forward iterator
+    iterator() noexcept
+      : iterator(not_canonical_address, N)
+    {
+    }
+
     bool operator == (const iterator& b) const noexcept
     { 
       return virtual_ptr() == b.virtual_ptr();
@@ -109,6 +118,21 @@ public:
       return copy;
     }
 
+#if 0
+    iterator& operator += (ptrdiff_t n) noexcept
+    {
+      T* const ptr2 = ptr + n;
+      const bool underflow = ptr2 < a_begin;
+      if (__builtin_expect(ptr2 > a_last || underflow, 0))
+      {
+        if (underflow) {
+          // n < 0
+          ptr += n 
+      }
+      return *this;
+    }
+#endif
+
     //! A "cycled" implementation. carry is incremented
     //! witch each overlap.
     iterator& operator -- () noexcept
@@ -138,11 +162,15 @@ public:
     }
 
   private:
-    iterator(T a_ptr[]) noexcept 
+    //! construct a past-the-end iterator
+    explicit iterator(T a_ptr[], size_t idx) noexcept 
       : a_begin(a_ptr),
-        a_last(a_ptr + N - 1)
+        a_last(a_ptr + N - 1),
+        ptr(a_ptr),
+        carry(0)
     {
       static_assert(N > 0, "array: wrong specialization");
+      *this += idx;
     }
 
     const T* virtual_ptr() const noexcept
@@ -150,8 +178,9 @@ public:
       return ptr + carry;
     }
 
-    T* const a_begin;
-    T* const a_last;
+    // TODO cache-line alignment
+    T* a_begin;
+    T* a_last;
     T* ptr;
     int64_t carry;
   };
