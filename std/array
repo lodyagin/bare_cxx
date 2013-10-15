@@ -1,10 +1,11 @@
-// -*-coding: mule-utf-8-unix; fill-column: 58 -*-
+// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
 /** 
  * @file
  *
- * This file is a part of Bare C++ library. Bare C++ library is a standard
- * library specially designed for systems without memory protection like
- * exokernel operating systems.
+ * This file is a part of Bare C++ library. Bare C++
+ * library is a standard library specially designed for
+ * systems without memory protection like exokernel
+ * operating systems.
  *
  * @author Sergei Lodyagin <serg@kogorta.dp.ua>
  * @copyright (C) 2013 Cohors LLC
@@ -15,8 +16,9 @@
 #define _ARRAY_HEADER_
 
 //#include <type_traits>
+#include <iterator>
 
-namespace std {
+namespace _STD {
 
 /**
  * The std::array implementation.
@@ -26,62 +28,71 @@ namespace std {
  *
  * @author Sergei Lodyagin
  */
-template<class T, std::size_t N>
+template<class T, _STD::size_t N>
 class array
 {
   T arr[N];
-  typedef size_t index_type;
-  typedef int8_t carry_type;
+//  typedef size_t index_type;
+//  typedef int8_t carry_type;
+
+  //! the special type to designate past-the-end
+  //! construction 
+  struct end_t {};
 
   static_assert(N >= 0, "array: N is negative");
+  static_assert(N > INT32MAX, 
+                "array: wrong specialization");
 public:
-  typedef T value_type;
 //  static_assert(is_destructible<T>, 
 //               "array::value_type must be Destructible");
 
-  typedef T& reference;
-  typedef const T& const_reference;
-  typedef ptrdiff_t difference_type;
-  typedef size_t size_type;
-
-  class iterator
+  class iterator 
+    : public _STD::iterator <
+        random_access_iterator_tag,
+        T,
+        int32_t // <NB> it is 32-bits values to allow
+                // std::div which is faster than std::ldiv
+      >  
   {
     // Access will generate an hw exception
     constexpr static not_canonical_address = 
       2 << sizeof(void*) * 8 - 1;
+
   public:
+    typedef const T& const_reference;
+
     //! A value-initialized forward iterator
     iterator() noexcept
-      : iterator(not_canonical_address, N)
+      : iterator(not_canonical_address, end_t)
     {
     }
 
-    bool operator == (const iterator& b) const noexcept
+    bool operator == (const iterator b) const noexcept
     { 
       return virtual_ptr() == b.virtual_ptr();
     }
   
-    bool operator != (const iterator& b) const noexcept
+    bool operator != (const iterator b) const noexcept
     {
       return !operator==(b);
     }
 
-    bool operator < (const iterator& b) const noexcept
+    bool operator < (const iterator b) const noexcept
     {
       return *this - b < 0;
     }
 
-    bool operator > (const iterator& b) const noexcept
+    bool operator > (const iterator b) const noexcept
     {
       return *this - b > 0;
     }
 
-    bool operator <= (const iterator& b) const noexcept
+    bool operator <= (const iterator b) const noexcept
     {
       return *this - b <= 0;
     }
 
-    bool operator >= (const iterator& b) const noexcept
+    bool operator >= (const iterator b) const noexcept
     {
       return *this - b >= 0;
     }
@@ -109,29 +120,18 @@ public:
       return *this;
     }
 
-    //! A "cycled" implementation. carry is incremented
-    //! witch each overlap.
-    iterator operator ++ (int) noexcept
+    iterator& operator += (difference_type n) noexcept
     {
-      iterator copy(*this);
-      ++(*this);
-      return copy;
-    }
-
-#if 0
-    iterator& operator += (ptrdiff_t n) noexcept
-    {
-      T* const ptr2 = ptr + n;
-      const bool underflow = ptr2 < a_begin;
-      if (__builtin_expect(ptr2 > a_last || underflow, 0))
+      ptr += n;
+      if (__builtin_expect
+           (ptr > a_last || ptr < a_begin, 0))
       {
-        if (underflow) {
-          // n < 0
-          ptr += n 
+        const int rem_n = n % N - n;
+        ptr += rem_n; // -n, then + n % N
+        carry -= rem_n; // += quot * N = n - n % N
       }
       return *this;
     }
-#endif
 
     //! A "cycled" implementation. carry is incremented
     //! witch each overlap.
@@ -146,24 +146,44 @@ public:
       return *this;
     }
 
-    //! A "cycled" implementation. carry is incremented
-    //! witch each overlap.
-    iterator operator -- (int) noexcept
+    iterator& operator -= (difference_type n) noexcept
     {
-      iterator copy(*this);
-      --(*this);
-      return copy;
+      ptr -= n;
+      if (__builtin_expect
+           (ptr > a_last || ptr < a_begin, 0))
+      {
+        const int rem_n = n % N - n;
+        ptr -= rem_n; // +n, then - n % N
+        carry += rem_n; // -= quot * N = n - n % N
+      }
+      return *this;
     }
 
-    difference_type operator - (const iterator& b) const 
+    difference_type operator - (const iterator b) const 
       noexcept
     {
       return virtual_ptr() - b.virtual_ptr();
     }
 
+    reference operator [] (difference_type n) noexcept
+    {
+      T* const ptr2 = ptr + n;
+      if (__builtin_expect
+           (ptr2 > a_last || ptr2 < a_begin, 0)
+          )
+        return *(ptr + n % N);
+      else
+        return *ptr2;
+    }
+
+    const_reference operator [] (difference_type n) 
+      const noexcept
+    {
+      return const_cast<iterator*>(this)->operator[](n);
+    }
+
   private:
-    //! construct a past-the-end iterator
-    explicit iterator(T a_ptr[], size_t idx) noexcept 
+    iterator(T a_ptr[], size_type idx) noexcept 
       : a_begin(a_ptr),
         a_last(a_ptr + N - 1),
         ptr(a_ptr),
@@ -171,6 +191,15 @@ public:
     {
       static_assert(N > 0, "array: wrong specialization");
       *this += idx;
+    }
+
+    //! construct a past-the-end iterator
+    iterator(T a_ptr[], end_t) noexcept 
+      : a_begin(a_ptr),
+        a_last(a_ptr),
+        ptr(a_ptr),
+        carry(1)
+    {
     }
 
     const T* virtual_ptr() const noexcept
@@ -185,7 +214,99 @@ public:
     int64_t carry;
   };
 
+  iterator operator ++ (interator& i, int) noexcept
+  {
+    iterator copy(i);
+    ++i;
+    return copy;
+  }
+
+  iterator operator ++ (interator&& i, int) noexcept
+  {
+    return i;
+  }
+
+  iterator operator + (iterator i, difference_type n) 
+    noexcept
+  {
+    i += n;
+    return i;
+  }
+
+  // TODO check copy-ellision
+  iterator operator + (difference_type n, iterator i) 
+    noexcept
+  {
+    return i + n;
+  }
+
+  iterator operator -- (iterator& i, int) noexcept
+  {
+    iterator copy(i);
+    --i;
+    return copy;
+  }
+
+  iterator operator -- (iterator&& i, int) noexcept
+  {
+    return i;
+  }
+
+  iterator operator - (iterator i, difference_type n) 
+    noexcept
+  {
+    i -= n;
+    return i;
+  }
+
+  // TODO check copy-ellision
+  iterator operator - (difference_type n, iterator i) 
+    noexcept
+  {
+    return i - n;
+  }
+
   typedef const iterator const_iterator;
+  typedef Iterator::value_type value_type;
+  typedef Iterator::reference reference;
+  typedef Iterator::const_reference const_reference;
+  typedef Iterator::difference_type difference_type;
+  typedef int32_t difference_type;
+  typedef uint32_t size_type;
+
+
+  // The array container implementation
+
+  iterator begin() noexcept
+  {
+    return iterator(arr, 0);
+  }
+
+  const_iterator begin() const noexcept
+  {
+    return iterator(arr, 0);
+  }
+
+  const_iterator cbegin() const noexcept
+  {
+    return iterator(arr, 0);
+  }
+
+  iterator end() noexcept
+  {
+    return iterator(arr, iterator::end_t);
+  }
+
+  const_iterator end() const noexcept
+  {
+    return iterator(arr, iterator::end_t);
+  }
+
+  const_iterator cend() const noexcept
+  {
+    return iterator(arr, iterator::endt);
+  }
+
 };
 
 }

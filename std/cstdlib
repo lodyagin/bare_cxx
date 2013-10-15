@@ -11,15 +11,14 @@
  *
  */
 
-#ifndef _CSTDLIB_HEADER_
-#define _CSTLIB_HEADER_
+#ifndef _CSTDLIB_HEADER
+#define _CSTDLIB_HEADER
 
 #include <cstdint>
 
-namespace std {
+namespace _STD {
 
-#if 1
-struct bare_div_t
+struct div_t
 {
   int quot;
   int rem;
@@ -42,20 +41,59 @@ struct imaxdiv_t
   intmax_t quot;
   intmax_t rem;
 };
-#endif
 
-inline bare_div_t bare_div(int x, int y)
+inline div_t div(int x, int y)
 {
-  static_assert(sizeof(int) == 4, "div");
+  static_assert(sizeof(int) == 4, 
+                "div: sizeof(int) != 4");
   register int x_ asm ("eax") = x;
   register int quot asm ("eax");
   register int rem asm ("edx");
-  asm ("cdq\n\tidivl %2" 
+  asm ("cdq \n\t"
+       "idivl %2" 
        : "=r" (quot), "=r" (rem)
        : "rm" (y), "0" (x_));
   return { quot, rem };
 }
 
+inline ldiv_t ldiv(long x, long y)
+{
+  static_assert(sizeof(long) == 8, 
+              "ldiv: sizeof(long) != 8");
+  register long x_ asm ("rax") = x;
+  register long quot asm ("rax");
+  register long rem asm ("rdx");
+  asm ("cd?\n\tidivq %2" 
+       : "=r" (quot), "=r" (rem)
+       : "rm" (y), "0" (x_));
+  return { quot, rem };
+}
+
+inline lldiv_t lldiv(long long x, long long y)
+{
+  static_assert(sizeof(long long) == 8, 
+              "lldiv: sizeof(long long) != 8");
+  register long x_ asm ("rax") = x;
+  register long quot asm ("rax");
+  register long rem asm ("rdx");
+  asm ("cd?\n\tidivq %2" 
+       : "=r" (quot), "=r" (rem)
+       : "rm" (y), "0" (x_));
+  return { quot, rem };
+}
+
+inline imaxdiv_t imaxdiv(intmax_t x, intmax_t y)
+{
+  static_assert(sizeof(intmax_t) == 8, 
+              "lldiv: sizeof(long long) != 8");
+  register long x_ asm ("rax") = x;
+  register long quot asm ("rax");
+  register long rem asm ("rdx");
+  asm ("cd?\n\tidivq %2" 
+       : "=r" (quot), "=r" (rem)
+       : "rm" (y), "0" (x_));
+  return { quot, rem };
+}
 
 }
 
