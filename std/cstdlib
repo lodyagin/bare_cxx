@@ -1,0 +1,62 @@
+// -*-coding: mule-utf-8-unix; fill-column: 58 -*-
+/** 
+ * @file
+ *
+ * This file is a part of Bare C++ library. Bare C++ library is a standard
+ * library specially designed for systems without memory protection like
+ * exokernel operating systems.
+ *
+ * @author Sergei Lodyagin <serg@kogorta.dp.ua>
+ * @copyright (C) 2013 Cohors LLC
+ *
+ */
+
+#ifndef _CSTDLIB_HEADER_
+#define _CSTLIB_HEADER_
+
+#include <cstdint>
+
+namespace std {
+
+#if 1
+struct bare_div_t
+{
+  int quot;
+  int rem;
+};
+
+struct ldiv_t
+{
+  long quot;
+  long rem;
+};
+
+struct lldiv_t
+{
+  long long quot;
+  long long rem;
+};
+
+struct imaxdiv_t
+{
+  intmax_t quot;
+  intmax_t rem;
+};
+#endif
+
+inline bare_div_t bare_div(int x, int y)
+{
+  static_assert(sizeof(int) == 4, "div");
+  register int x_ asm ("eax") = x;
+  register int quot asm ("eax");
+  register int rem asm ("edx");
+  asm ("cdq\n\tidivl %2" 
+       : "=r" (quot), "=r" (rem)
+       : "rm" (y), "0" (x_));
+  return { quot, rem };
+}
+
+
+}
+
+#endif
