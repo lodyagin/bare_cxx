@@ -81,6 +81,7 @@ public:
     return !operator==(b);
   }
 
+
   bool operator < (const _array_iterator b) const noexcept
   {
     return *this - b < 0;
@@ -103,72 +104,58 @@ public:
 
   reference operator * () noexcept
   {
-    return *ptr;
+    return a_begin[idx];
   }
 
   const_reference operator * () const noexcept
   {
-    return *ptr;
+    return a_begin[idx];
   }
 
   //! A "cycled" implementation. carry is incremented
   //! witch each overlap.
   _array_iterator& operator ++ () noexcept
   {
-    if (__builtin_expect(ptr++ >= a_last, 0))
+    if (__builtin_expect(idx++ >= N, 0))
     {
-      ptr = a_begin;
+      idx = 0;
       static_assert(N < UINT64_MAX/4, "array: too big");
       carry += N;
     }
     return *this;
   }
 
-  _array_iterator operator ++ (int) & noexcept
+  _array_iterator operator ++ (int) noexcept
   {
     _array_iterator copy(*this);
     ++(*this);
     return copy;
   }
 
-  _array_iterator operator ++ (int) && noexcept
-  {
-    return std::move(*this);
-  }
-
   _array_iterator& operator += (difference_type n) noexcept
   {
-    ptr += n;
-    if (__builtin_expect(ptr > a_last, 0)
-        || __builtin_expect(ptr < a_begin, 0))
+    if (__builtin_expect((idx + n) >= N, 0))
     {
-      const int rem_n = n % N - n;
-      ptr += rem_n; // -n, then + n % N
-      carry -= rem_n; // += quot * N = n - n % N
+      idx += n % N;
+      carry += n - n % N;
     }
     return *this;
   }
 
-  _array_iterator operator + (difference_type n) const & noexcept
+  _array_iterator operator + (difference_type n) const noexcept
   {
     _array_iterator i(*this);
     i += n;
     return i;
   }
 
-  _array_iterator operator + (difference_type n) && noexcept
-  {
-    *this += n;
-    return std::move(*this);
-  }
-
   //! A "cycled" implementation. carry is incremented
   //! witch each overlap.
   _array_iterator& operator -- () noexcept
   {
-    if (__builtin_expect(ptr-- <= a_begin, 0))
+    if (__builtin_expect(idx-- == 0, 0))
     {
-      ptr = a_last;
+      idx = N - 1;
       static_assert(N < UINT64_MAX/4, "array: too big");
       carry -= N;
     }
@@ -177,28 +164,14 @@ public:
 
   _array_iterator& operator -= (difference_type n) noexcept
   {
-    ptr -= n;
-    if (__builtin_expect(ptr < a_begin, 0)
-        || __builtin_expect(ptr > a_last, 0))
-    {
-      const int rem_n = n % N - n;
-      ptr -= rem_n; // +n, then - n % N
-      carry += rem_n; // -= quot * N = n - n % N
-    }
-    return *this;
+    return operator+=(-n);
   }
 
-  _array_iterator operator - (difference_type n) const & noexcept
+  _array_iterator operator - (difference_type n) const noexcept
   {
     _array_iterator i(*this);
     i -= n;
     return i;
-  }
-
-  _array_iterator operator - (difference_type n) && noexcept
-  {
-    *this -= n;
-    return std::move(*this);
   }
 
   difference_type operator - (const _array_iterator b) const 
@@ -209,13 +182,7 @@ public:
 
   reference operator [] (difference_type n) noexcept
   {
-    T* const ptr2 = ptr + n;
-    if (__builtin_expect
-        (ptr2 > a_last || ptr2 < a_begin, 0)
-      )
-      return *(ptr + n % N);
-    else
-      return *ptr2;
+    return *(*this + n);
   }
 
   const_reference operator [] (difference_type n) 
@@ -225,21 +192,18 @@ public:
   }
 
 private:
-  _array_iterator(T a_ptr[], size_type idx) noexcept 
+  _array_iterator(T a_ptr[], size_type the_idx) noexcept 
     : a_begin(a_ptr),
-      a_last(a_ptr + N - 1),
-      ptr(a_ptr),
       carry(0)
   {
     static_assert(N > 0, "array: wrong specialization");
-    *this += idx;
+    *this += the_idx;
   }
 
   //! construct a begin iterator
   _array_iterator(T a_ptr[], begin_t) noexcept 
     : a_begin(a_ptr),
-      a_last(a_ptr + N - 1),
-      ptr(a_ptr),
+      idx(0),
       carry(0)
   {
   }
@@ -247,42 +211,40 @@ private:
   //! construct a past-the-end iterator
   _array_iterator(T a_ptr[], end_t) noexcept 
     : a_begin(a_ptr),
-      a_last(a_ptr + N - 1),
-      ptr(a_ptr),
+      idx(0),
       carry(N)
   {
   }
 
   const T* virtual_ptr() const noexcept
   {
-    return ptr + carry;
+    return a_begin + idx + carry;
   }
 
   // TODO cache-line alignment
   T* a_begin;
-  T* a_last;
-  T* ptr;
-  int64_t carry;
+  size_type idx;
+  difference_type carry;
 };
 
 // TODO check copy-ellision
 template<class T, _STD::size_t N>
 inline _array_iterator<T,N> operator + 
   (typename _array_iterator<T,N>::difference_type n, 
-   _array_iterator<T,N>&& i)
+   _array_iterator<T,N> i)
      noexcept
 {
-  return std::forward(i) + n;
+  return i + n;
 }
 
 // TODO check copy-ellision
 template<class T, _STD::size_t N>
 inline _array_iterator<T,N> operator - 
   (typename _array_iterator<T,N>::difference_type n, 
-   _array_iterator<T,N>&& i) 
+   _array_iterator<T,N> i) 
      noexcept
 {
-  return std::forward(i) - n;
+  return i - n;
 }
 
 /**
