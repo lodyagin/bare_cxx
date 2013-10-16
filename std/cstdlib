@@ -63,7 +63,8 @@ inline ldiv_t ldiv(long x, long y)
   register long x_ asm ("rax") = x;
   register long quot asm ("rax");
   register long rem asm ("rdx");
-  asm ("cd?\n\tidivq %2" 
+  asm ("cqo \n\t"
+       "idivq %2" 
        : "=r" (quot), "=r" (rem)
        : "rm" (y), "0" (x_));
   return { quot, rem };
@@ -76,7 +77,8 @@ inline lldiv_t lldiv(long long x, long long y)
   register long x_ asm ("rax") = x;
   register long quot asm ("rax");
   register long rem asm ("rdx");
-  asm ("cd?\n\tidivq %2" 
+  asm ("cdo \n\t"
+       "idivq %2" 
        : "=r" (quot), "=r" (rem)
        : "rm" (y), "0" (x_));
   return { quot, rem };
@@ -89,7 +91,8 @@ inline imaxdiv_t imaxdiv(intmax_t x, intmax_t y)
   register long x_ asm ("rax") = x;
   register long quot asm ("rax");
   register long rem asm ("rdx");
-  asm ("cd?\n\tidivq %2" 
+  asm ("cdo \n\t"
+       "idivq %2" 
        : "=r" (quot), "=r" (rem)
        : "rm" (y), "0" (x_));
   return { quot, rem };

@@ -11,10 +11,10 @@
  *
  */
 
-#ifndef _CSTDINT_HEADER_
-#define _CSTDINT_HEADER_
+#ifndef _CSTDINT_HEADER
+#define _CSTDINT_HEADER
 
-namespace std {
+namespace _STD {
 
 typedef signed char int8_t;
 typedef unsigned char uint8_t;

@@ -15,6 +15,9 @@
 #ifndef _ITERATOR_HEADER_
 #define _ITERATOR_HEADER_
 
+#include <algorithm>
+#include "cstddef"
+
 namespace _STD {
 
 // iterator categories
@@ -53,11 +56,11 @@ struct iterator
 template<class Iterator>
 struct iterator_traits
 {
-  typedef Iterator::difference_type difference_type;
-  typedef Iterator::value_type difference_type;
-  typedef Iterator::pointer pointer;
-  typedef Iterator::reference reference;
-  typedef Iterator::iterator_category iterator_category;
+  typedef typename Iterator::difference_type difference_type;
+  typedef typename Iterator::value_type value_type;
+  typedef typename Iterator::pointer pointer;
+  typedef typename Iterator::reference reference;
+  typedef typename Iterator::iterator_category iterator_category;
 };
 
 template<class Iterator>
@@ -77,30 +80,29 @@ public:
   typedef typename TR::pointer pointer;
   typedef typename TR::reference reference;
 
-  explicit reverse_iterator(Iterator x) 
-    : it(x) 
+  explicit reverse_iterator(Iterator x) : current(x) 
   {}
 
   template<class U>
   reverse_iterator(const reverse_iterator<U>& other)
-    : it(other.base())
+    : current(other.base())
   {}
 
   template<class U>
   reverse_iterator& operator = 
     (const reverse_iterator<U>& other)
   {
-    it = other.base();
+    current = other.base();
   }
 
   Iterator base() const
   {
-    return it;
+    return current;
   }
 
   reverse_iterator operator * () const
   {
-    Iterator copy(it);
+    Iterator copy(current);
     return *--copy;
   }
 
@@ -111,52 +113,60 @@ public:
 
   reverse_iterator& operator ++ ()
   {
-    --it;
+    --current;
     return *this;
+  }
+
+  reverse_iterator operator ++ (int)
+  {
+    reverse_iterator copy(*this);
+    ++(*this);
+    return copy;
+  }
+
+  reverse_iterator& operator += (difference_type n)
+  {
+    current -= n;
+    return *this;
+  }
+
+  reverse_iterator operator + (difference_type n) &&
+  {
+    return reverse_iterator(std::forward(current) - n);
+  }
+
+  reverse_iterator& operator -- ()
+  {
+    ++current;
+    return *this;
+  }
+
+  reverse_iterator operator -- (int)
+  {
+    reverse_iterator copy(*this);
+    --(*this);
+    return copy;
+  }
+
+  reverse_iterator& operator -= (difference_type n)
+  {
+    current += n;
+    return *this;
+  }
+
+  reverse_iterator operator - (difference_type n) &&
+  {
+    return reverse_iterator(std::forward(current) + n);
   }
 
   reference operator [] (difference_type n) const
   {
-    ?
+    return current.operator[](-n-1);
   }
 
 protected:
-  Iterator it;
+  Iterator current;
 };
-
-template<class It>
-reverse_iterator<It> operator ++ 
-  (reverse_iterator<It>& ri, int)
-{
-  reverse_iterator copy(ri);
-  --ri;
-  return copy;
-}
-
-template<class It>
-reverse_iterator<It> operator ++ 
-  (reverse_iterator<It>&& ri, int)
-{
-  return reversible_iterator
-    (It::operator--(std::move(ri.it), 0));
-}
-
-template<class It>
-reverse_iterator<It> operator --
-  (reverse_iterator<It>& ri, int)
-{
-  reverse_iterator copy(ri);
-  ++ri;
-  return copy;
-}
-
-template<class It>
-reverse_iterator<It> operator --
-  (reverse_iterator<It>&& ri, int)
-{
-  return reversible_iterator
-    (It::operator++(std::move(ri.it), 0));
-}
 
 }
 

@@ -11,12 +11,12 @@
  *
  */
 
-#ifndef _CSTDDEF_HEADER_
-#define _CSTDDEF_HEADER_
+#ifndef _CSTDDEF_HEADER
+#define _CSTDDEF_HEADER
 
 #include <cstdint>
 
-namespace std {
+namespace _STD {
 
 //! Unsigned integer type returned by the sizeof operator.
 typedef uint64_t size_t;
