@@ -168,6 +168,64 @@ protected:
   Iterator current;
 };
 
+template<class I1, class I2>
+bool operator == 
+  (const reverse_iterator<I1>& lhs, const reverse_iterator<I1>& rhs)
+{
+  return lhs.base() == rhs.base();
+}
+
+template<class I1, class I2>
+bool operator != 
+  (const reverse_iterator<I1>& lhs, const reverse_iterator<I1>& rhs)
+{
+  return lhs.base() != rhs.base();
+}
+
+template<class I1, class I2>
+bool operator <
+  (const reverse_iterator<I1>& lhs, const reverse_iterator<I1>& rhs)
+{
+  return lhs.base() > rhs.base();
+}
+
+template<class I1, class I2>
+bool operator <=
+  (const reverse_iterator<I1>& lhs, const reverse_iterator<I1>& rhs)
+{
+  return lhs.base() >= rhs.base();
+}
+
+template<class I1, class I2>
+bool operator >
+  (const reverse_iterator<I1>& lhs, const reverse_iterator<I1>& rhs)
+{
+  return lhs.base() < rhs.base();
+}
+
+template<class I1, class I2>
+bool operator >=
+  (const reverse_iterator<I1>& lhs, const reverse_iterator<I1>& rhs)
+{
+  return lhs.base() <= rhs.base();
+}
+
+template<class I>
+reverse_iterator<I> operator +
+  (typename reverse_iterator<I>::difference_type n,
+   const reverse_iterator<I>& it)
+{
+  return reverse_iterator<I>(it.base() - n);
+}
+
+template<class I1, class I2>
+auto operator -
+  (const reverse_iterator<I1>& lhs, const reverse_iterator<I1>& rhs)
+  -> decltype(rhs.base() - lhs.base())
+{
+  return rhs.base() - lhs.base();
+}
+
 }
 
 #endif
