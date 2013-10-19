@@ -18,6 +18,7 @@
 #include <config.bare>
 #include <iterator>
 #include <cstddef>
+#include <algorithm>
 
 namespace _STD {
 
@@ -258,13 +259,11 @@ inline _array_iterator<T,N> operator -
 template<class T, _STD::size_t N>
 class array
 {
-  T arr[N];
-//  typedef size_t index_type;
-//  typedef int8_t carry_type;
-
   static_assert(N >= 0, "array: N is negative");
   static_assert(N < INT32_MAX, 
                 "array: wrong specialization");
+
+  T arr[N];
 public:
 //  static_assert(is_destructible<T>, 
 //               "array::value_type must be Destructible");
@@ -276,6 +275,76 @@ public:
   typedef typename iterator::const_reference const_reference;
   typedef typename iterator::difference_type difference_type;
 
+  //TODO std::out_of_range
+  //reference at(size_type pos);
+  //const_reference at(size_type pos) const;
+
+  reference operator [] (size_type pos) noexcept
+  {
+    if (__builtin_expect(pos >= N, 0))
+      pos %= N;
+    return arr[pos];
+  }
+
+  // not c++-14 compatible 
+  // (unable to make constexpr - use get(array) instead)
+  const_reference operator [] (size_type pos) const 
+    noexcept
+  {
+    return const_cast<array*>(this)->operator [] (pos);
+  }
+
+  reference front() noexcept
+  {
+    return arr[0];
+  }
+
+  constexpr const_reference front() const
+  {
+    return arr[0];
+  }
+
+  reference back() noexcept
+  {
+    return arr[N-1];
+  }
+
+  constexpr const_reference back() const
+  {
+    return arr[N-1];
+  }
+
+  // Disaled for safety. Try use C++
+  // T* data();
+  // const T* data() const;
+
+  constexpr bool empty() const
+  {
+    return N != 0;
+  }
+
+  constexpr size_type size() const
+  {
+    return N;
+  }
+
+  constexpr size_type max_size() const
+  {
+    return N;
+  }
+
+  void fill(const T& value) noexcept
+  {
+    // TODO use cache optimization here
+    for (T& e : arr) e = value;
+  }
+
+  void swap(array& other) noexcept
+  {
+    // TODO use cache optimization here
+    for (size_type i = 0; i < N; i++)
+      swap(arr[i], other.arr[i]);
+  }
 
   // The array container implementation
 
@@ -311,7 +380,82 @@ public:
 
 };
 
+template< class T, std::size_t N >
+bool operator==( const array<T,N>& lhs,
+                 const array<T,N>& rhs )
+{
+  // TODO use cache optimization here
+  for (size_type i = 0; i < N; i++)
+    if (lhs[i] != rhs[i])
+      return false;
+  return true;
+}
+		
+template< class T, std::size_t N >
+bool operator!=( const array<T,N>& lhs,
+                 const array<T,N>& rhs )
+{
+  return !operator==(lhs, rhs);
+}
+		
+template< class T, std::size_t N >
+bool operator<( const array<T,N>& lhs,
+                const array<T,N>& rhs )
+{
+  static_assert(N > 0, "array: wrong specialization");
 
+  // TODO use cache optimization here
+  size_type i = 0;
+  while (i < N && lhs[i] == rhs[i]) ++i;
+  return i < N && lhs[i] < rhs[i];
+}
+		
+template< class T, std::size_t N >
+bool operator<=( const array<T,N>& lhs,
+                 const array<T,N>& rhs )
+{
+  static_assert(N > 0, "array: wrong specialization");
+
+  // TODO use cache optimization here
+  size_type i = 0;
+  while (i < N && lhs[i] == rhs[i]) ++i;
+  return i == N || lhs[i] < rhs[i];
+}
+		
+template< class T, std::size_t N >
+bool operator>( const array<T,N>& lhs,
+                const array<T,N>& rhs )
+{
+  return ! operator<= (lhs, rhs);
+}
+		
+template< class T, std::size_t N >
+bool operator>=( const array<T,N>& lhs,
+                 const array<T,N>& rhs )
+{
+  return ! operator< (lhs, rhs);
+}
+
+template< size_t I, class T, size_t N >
+constexpr T& get( array<T,N>& a )
+{
+  static_assert(I < N, "array: the index I is out of range");
+  return a[I];
+}
+		
+template< size_t I, class T, size_t N >
+constexpr T&& get( array<T,N>&& a )
+{
+  static_assert(I < N, "array: the index I is out of range");
+  return std::forward(a[I]); 
+}
+		
+template< size_t I, class T, size_t N >
+constexpr const T& get( const array<T,N>& a )
+{
+  static_assert(I < N, "array: the index I is out of range");
+  return a[I]; 
+}
 
 }
 

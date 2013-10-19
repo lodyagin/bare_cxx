@@ -1,0 +1,37 @@
+// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+/** 
+ * @file
+ *
+ * This file is a part of Bare C++ library. Bare C++
+ * library is a standard library specially designed for
+ * systems without memory protection like exokernel
+ * operating systems.
+ *
+ * @author Sergei Lodyagin <serg@kogorta.dp.ua>
+ * @copyright (C) 2013 Cohors LLC
+ *
+ */
+
+#ifndef _ALGORITHM_HEADER_
+#define _ALGORITHM_HEADER_
+
+#include <config.bare>
+
+namespace _STD {
+
+// FIXME move semantic, noexcept specification
+template<class T>
+void swap(T& a, T& b) noexcept
+{
+  //TODO check the compilation result (assembler)
+  T temp = a;
+  a = b;
+  b = temp;
+}
+
+/* Disabled for safety. Use std::array::swap
+template< class T2, size_t N >
+void swap( T2 (&a)[N], T2 (&b)[N]);
+*/
+
+}
