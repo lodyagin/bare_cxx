@@ -1,0 +1,116 @@
+// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+/** 
+ * @file
+ *
+ * This file is a part of Bare C++ library. Bare C++
+ * library is a standard library specially designed for
+ * systems without memory protection like exokernel
+ * operating systems.
+ *
+ * @author Sergei Lodyagin <serg@kogorta.dp.ua>
+ * @copyright (C) 2013 Cohors LLC
+ *
+ */
+
+#ifndef _OSTREAM_HEADER
+#define _OSTREAM_HEADER
+
+#include <config.bare>
+#include <ios>
+
+namespace _STD {
+
+template <
+  class CharT,
+  class Traits = char_traits<CharT>
+> 
+class basic_ostream 
+  : virtual public basic_ios<CharT, Traits>
+{		
+public:
+  typedef CharT char_type;
+  typedef Traits traits_type;
+  typedef typename Traits::int_type int_type;
+  typedef typename Traits::pos_type post_type;
+  typedef typename Traits::off_type off_type;
+
+  explicit basic_ostream
+    (std::basic_streambuf<CharT, Traits>* sb)
+  {
+    basic_ios::init(sb);
+  }
+
+  // FIXME virtual
+  ~basic_ostream() {}
+
+  // TODO
+  // operator=
+		
+  class sentry
+  {
+  public:
+    explicit sentry(std::basic_ostream<CharT,Traits>& os)
+      : ok(false)
+    {
+      if (!os.good()) {
+        return;
+      }
+
+      /* TODO if eofbit or badbit are set on the output
+      stream, sets the failbit as well, and if exceptions
+      on failbit are enabled in this output stream's
+      exception mask, throws ios_base::failure.  */
+
+      if ((auto tied = os.tie())) 
+        tied->flush();
+      return ok;
+    }
+
+    ~sentry() {}
+
+    explicit operator bool() const
+    {
+      return ok;
+    }
+
+  protected:
+    bool ok;
+  };
+
+protected:
+  basic_ostream(const basic_ostream& rhs) = delete;
+
+  // TODO
+  // basic_ostream( basic_ostream&& rhs );
+};
+
+template< class CharT, class Traits>
+basic_ostream<CharT,Traits>& 
+operator << (basic_ostream<CharT,Traits>& os, CharT ch)
+{
+  // TODO padding
+  basic_ostream::sentry sentry;
+  if (sentry) {
+    //TODO try/catch
+    rdbuf() -> sputc(ch);
+  }
+  return *this;
+}	
+
+template< class CharT, class Traits>
+basic_ostream<CharT,Traits>& 
+  operator << 
+    (basic_ostream<CharT,Traits>& os, 
+     const basic_string<CharT>& ch)
+{
+}	
+
+
+
+typedef basic_ostream<char> ostream;
+typedef basic_ostream<wchar_t> wostream;
+
+}
+
+#endif
+

@@ -1,0 +1,403 @@
+// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+/** 
+ * @file
+ *
+ * This file is a part of Bare Metal OS C++ library.
+ *
+ * @author Sergei Lodyagin <serg@kogorta.dp.ua>
+ * @copyright (C) 2013 Cohors LLC
+ *
+ */
+
+#ifndef _BARE_VIDEO_HEADER_
+#define _BARE_VIDEO_HEADER_
+
+#include <iterator>
+#include <cstddef>
+
+extern "C" {
+
+
+
+}
+
+namespace bare { 
+namespace video {
+
+/**
+ * The video::terminal::iterator implementation. It
+ * implements an OutputIterator concept
+ * over the BareMetal OS screen output syscalls. It is very
+ * similar to std::ostream_iterator but works with the
+ * screen directly without buffering.
+ *
+ * @author Sergei Lodyagin
+ */
+template<class CharT>
+class _terminal_iterator 
+  : public std::iterator 
+      <output_iterator_tag, void, void, void, void>
+{
+  friend terminal;
+public:
+  //typedef iterator::iterator_category iterator_category;
+  typedef CharT char_type;
+
+  reference operator * () noexcept
+  {
+    return a_begin[idx];
+  }
+
+  const_reference operator * () const noexcept
+  {
+    return a_begin[idx];
+  }
+
+  //! A "cycled" implementation. carry is incremented
+  //! witch each overlap.
+  _array_iterator& operator ++ () noexcept
+  {
+    if (__builtin_expect(idx++ >= N, 0))
+    {
+      idx = 0;
+      static_assert(N < UINT64_MAX/4, "array: too big");
+      carry += N;
+    }
+    return *this;
+  }
+
+  _array_iterator operator ++ (int) noexcept
+  {
+    _array_iterator copy(*this);
+    ++(*this);
+    return copy;
+  }
+
+  _array_iterator& operator += (difference_type n) noexcept
+  {
+    if (__builtin_expect((idx + n) >= N, 0))
+    {
+      idx += n % N;
+      carry += n - n % N;
+    }
+    return *this;
+  }
+
+  _array_iterator operator + (difference_type n) const noexcept
+  {
+    _array_iterator i(*this);
+    i += n;
+    return i;
+  }
+
+  //! A "cycled" implementation. carry is incremented
+  //! witch each overlap.
+  _array_iterator& operator -- () noexcept
+  {
+    if (__builtin_expect(idx-- == 0, 0))
+    {
+      idx = N - 1;
+      static_assert(N < UINT64_MAX/4, "array: too big");
+      carry -= N;
+    }
+    return *this;
+  }
+
+  _array_iterator& operator -= (difference_type n) noexcept
+  {
+    return operator+=(-n);
+  }
+
+  _array_iterator operator - (difference_type n) const noexcept
+  {
+    _array_iterator i(*this);
+    i -= n;
+    return i;
+  }
+
+  difference_type operator - (const _array_iterator b) const 
+  noexcept
+  {
+    return virtual_ptr() - b.virtual_ptr();
+  }
+
+  reference operator [] (difference_type n) noexcept
+  {
+    return *(*this + n);
+  }
+
+  const_reference operator [] (difference_type n) 
+    const noexcept
+  {
+    return const_cast<_array_iterator*>(this)->operator[](n);
+  }
+
+private:
+  _array_iterator(T a_ptr[], size_type the_idx) noexcept 
+    : a_begin(a_ptr),
+      carry(0)
+  {
+    static_assert(N > 0, "array: wrong specialization");
+    *this += the_idx;
+  }
+
+  //! construct a begin iterator
+  _array_iterator(T a_ptr[], begin_t) noexcept 
+    : a_begin(a_ptr),
+      idx(0),
+      carry(0)
+  {
+  }
+
+  //! construct a past-the-end iterator
+  _array_iterator(T a_ptr[], end_t) noexcept 
+    : a_begin(a_ptr),
+      idx(0),
+      carry(N)
+  {
+  }
+
+  const T* virtual_ptr() const noexcept
+  {
+    return a_begin + idx + carry;
+  }
+
+  // TODO cache-line alignment
+  T* a_begin;
+  size_type idx;
+  difference_type carry;
+};
+
+// TODO check copy-ellision
+template<class T, _STD::size_t N>
+inline _array_iterator<T,N> operator + 
+  (typename _array_iterator<T,N>::difference_type n, 
+   _array_iterator<T,N> i)
+     noexcept
+{
+  return i + n;
+}
+
+// TODO check copy-ellision
+template<class T, _STD::size_t N>
+inline _array_iterator<T,N> operator - 
+  (typename _array_iterator<T,N>::difference_type n, 
+   _array_iterator<T,N> i) 
+     noexcept
+{
+  return i - n;
+}
+
+/**
+ * The std::array implementation.
+ * It is "cycled", iterator++ at the last cell jumps to
+ * start. As a result a difference between two iterators
+ * count overlaps.
+ *
+ * @author Sergei Lodyagin
+ */
+template<class T, _STD::size_t N>
+class array
+{
+  static_assert(N >= 0, "array: N is negative");
+  static_assert(N < INT32_MAX, 
+                "array: wrong specialization");
+
+  T arr[N];
+public:
+//  static_assert(is_destructible<T>, 
+//               "array::value_type must be Destructible");
+
+  typedef _array_iterator<T, N> iterator;
+  typedef const iterator const_iterator;
+  typedef typename iterator::value_type value_type;
+  typedef typename iterator::reference reference;
+  typedef typename iterator::const_reference const_reference;
+  typedef typename iterator::difference_type difference_type;
+
+  //TODO std::out_of_range
+  //reference at(size_type pos);
+  //const_reference at(size_type pos) const;
+
+  reference operator [] (size_type pos) noexcept
+  {
+    if (__builtin_expect(pos >= N, 0))
+      pos %= N;
+    return arr[pos];
+  }
+
+  // not c++-14 compatible 
+  // (unable to make constexpr - use get(array) instead)
+  const_reference operator [] (size_type pos) const 
+    noexcept
+  {
+    return const_cast<array*>(this)->operator [] (pos);
+  }
+
+  reference front() noexcept
+  {
+    return arr[0];
+  }
+
+  constexpr const_reference front() const
+  {
+    return arr[0];
+  }
+
+  reference back() noexcept
+  {
+    return arr[N-1];
+  }
+
+  constexpr const_reference back() const
+  {
+    return arr[N-1];
+  }
+
+  // Disaled for safety. Try use C++
+  // T* data();
+  // const T* data() const;
+
+  constexpr bool empty() const
+  {
+    return N != 0;
+  }
+
+  constexpr size_type size() const
+  {
+    return N;
+  }
+
+  constexpr size_type max_size() const
+  {
+    return N;
+  }
+
+  void fill(const T& value) noexcept
+  {
+    // TODO use cache optimization here
+    for (T& e : arr) e = value;
+  }
+
+  void swap(array& other) noexcept
+  {
+    // TODO use cache optimization here
+    for (size_type i = 0; i < N; i++)
+      swap(arr[i], other.arr[i]);
+  }
+
+  // The array container implementation
+
+  iterator begin() noexcept
+  {
+    return iterator(arr, typename iterator::begin_t());
+  }
+
+  const_iterator begin() const noexcept
+  {
+    return iterator(arr, typename iterator::begin_t());
+  }
+
+  const_iterator cbegin() const noexcept
+  {
+    return iterator(arr, typename iterator::begin_t());
+  }
+
+  iterator end() noexcept
+  {
+    return iterator(arr, typename iterator::end_t());
+  }
+
+  const_iterator end() const noexcept
+  {
+    return iterator(arr, typename iterator::end_t());
+  }
+
+  const_iterator cend() const noexcept
+  {
+    return iterator(arr, typename iterator::end_());
+  }
+
+};
+
+template< class T, std::size_t N >
+bool operator==( const array<T,N>& lhs,
+                 const array<T,N>& rhs )
+{
+  // TODO use cache optimization here
+  for (size_type i = 0; i < N; i++)
+    if (lhs[i] != rhs[i])
+      return false;
+  return true;
+}
+		
+template< class T, std::size_t N >
+bool operator!=( const array<T,N>& lhs,
+                 const array<T,N>& rhs )
+{
+  return !operator==(lhs, rhs);
+}
+		
+template< class T, std::size_t N >
+bool operator<( const array<T,N>& lhs,
+                const array<T,N>& rhs )
+{
+  static_assert(N > 0, "array: wrong specialization");
+
+  // TODO use cache optimization here
+  size_type i = 0;
+  while (i < N && lhs[i] == rhs[i]) ++i;
+  return i < N && lhs[i] < rhs[i];
+}
+		
+template< class T, std::size_t N >
+bool operator<=( const array<T,N>& lhs,
+                 const array<T,N>& rhs )
+{
+  static_assert(N > 0, "array: wrong specialization");
+
+  // TODO use cache optimization here
+  size_type i = 0;
+  while (i < N && lhs[i] == rhs[i]) ++i;
+  return i == N || lhs[i] < rhs[i];
+}
+		
+template< class T, std::size_t N >
+bool operator>( const array<T,N>& lhs,
+                const array<T,N>& rhs )
+{
+  return ! operator<= (lhs, rhs);
+}
+		
+template< class T, std::size_t N >
+bool operator>=( const array<T,N>& lhs,
+                 const array<T,N>& rhs )
+{
+  return ! operator< (lhs, rhs);
+}
+
+template< size_t I, class T, size_t N >
+constexpr T& get( array<T,N>& a )
+{
+  static_assert(I < N, "array: the index I is out of range");
+  return a[I];
+}
+		
+template< size_t I, class T, size_t N >
+constexpr T&& get( array<T,N>&& a )
+{
+  static_assert(I < N, "array: the index I is out of range");
+  return std::forward(a[I]); 
+}
+		
+template< size_t I, class T, size_t N >
+constexpr const T& get( const array<T,N>& a )
+{
+  static_assert(I < N, "array: the index I is out of range");
+  return a[I]; 
+}
+
+}
+}
+
+#endif

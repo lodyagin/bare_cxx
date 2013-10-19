@@ -12,24 +12,16 @@
  *
  */
 
-#ifndef _BASIC_OSTREAM_HEADER
-#define _BASIC_OSTREAM_HEADER
+#ifndef _CWCHAR_HEADER_
+#define _CWCHAR_HEADER_
 
 #include <config.bare>
 
 namespace _STD {
 
-template<class CharT>
-class basic_ostream
-{
-public:
-  typedef CharT char_type;
-};
-
-typedef basic_ostream<char> ostream;
-typedef basic_ostream<wchar_t> wostream;
+// TODO
+struct mbstate_t {};
 
 }
 
 #endif
-

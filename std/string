@@ -1,0 +1,167 @@
+// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+/** 
+ * @file
+ *
+ * This file is a part of Bare C++ library. Bare C++
+ * library is a standard library specially designed for
+ * systems without memory protection like exokernel
+ * operating systems.
+ *
+ * @author Sergei Lodyagin <serg@kogorta.dp.ua>
+ * @copyright (C) 2013 Cohors LLC
+ *
+ */
+
+#ifndef _STRING_HEADER_
+#define _STRING_HEADER_
+
+#include <config.bare>
+#include <cstdint>
+
+namespace _STD {
+
+struct mbstate_t {};
+
+template<class State>
+class fpos
+{
+//TODO
+};
+
+typedef intmax_t streamoff;
+
+
+typedef std::fpos<mbstate_t> streampos;
+
+template<class CharT>
+class char_traits {};
+
+template<>
+class char_traits<char>
+{
+  typedef char char_type;
+  typedef int int_type;
+  typedef streamoff off_type; 
+  typedef streampos pos_type;
+  typedef mbstate_t state_type;
+
+  static constexpr int_type to_int_type(char_type c)
+  {
+    return c;
+  }
+
+  static constexpr int_type eof() { return -1; }
+};
+
+#if 0
+//! A helper function for constexpr_string construction.
+//! Taken from http://stackoverflow.com/a/8938675/1326885
+constexpr uint32_t constexpr_string_length(const char* s) 
+{
+  return *s == '\0' 
+    ? 0 : 1 + constexpr_string_length(s + 1);
+}
+
+class constexpr_string_char
+{
+public:
+  template<uint32_t N>
+  constexpr constexpr_string_char(const char(&str)[N])
+    : str_ptr(str), sz(N-1) 
+  {}
+
+  const char * const str_ptr;
+  const uint32_t sz;
+};
+#endif
+
+template <
+  class CharT,
+  class Traits = std::char_traits<CharT> //,
+//  class Allocator = std::allocator<CharT>
+//  , uint32_t max_size_limit = 
+> 
+class _basic_string_impl
+{
+public:
+  typedef Traits traits_type;
+  typedef CharT value_type;
+  typedef uint32_t size_type;
+  typedef int32_t difference_type;
+  typedef value_type& reference;
+  typedef const value_type& const_reference;
+//  typedef _basic_string_iterator<CharT> iterator;
+//  typedef const iterator const_iterator;
+//  typedef reverse_iterator<iterator> reverse_iterator;
+//  typedef const reverse_iterator const_reverse_iterator;
+//  typedef typename iterator::value_type value_type;
+//  typedef typename iterator::reference reference;
+//  typedef typename iterator::const_reference const_reference;
+//  typedef typename iterator::difference_type difference_type;
+  
+  //TODO add more constructors
+};
+
+/**
+ * The std::string implementation.
+ * It is far from the standard yet.
+ *
+ * @author Sergei Lodyagin
+ */
+template <
+  class CharT,
+  class Traits = std::char_traits<CharT> //,
+//  class Allocator = std::allocator<CharT>
+//  , uint32_t max_size_limit = 
+> 
+class basic_string 
+  : public _basic_string_impl<CharT, Traits>
+{
+};
+
+/**
+ * Just constexpr_basic_string. It is not defined in the
+ * C++ standarg but is used in bare_c++lib for "wrap"
+ * string literals and not pass strings with unpredicted
+ * length to other functions (e.g., streams).
+ *
+ * @author Sergei Lodyagin
+ */
+template <
+  class CharT,
+  class Traits = std::char_traits<CharT>
+> 
+class constexpr_basic_string 
+  : public _basic_string_impl
+      <CharT, Traits /*, std:pre_allocated*/ >
+{
+};
+
+template <class Traits>
+class constexpr_basic_string<char, Traits>
+  : public _basic_string_impl<char, Traits>
+{
+public:
+  typedef typename _basic_string_impl<char, Traits>
+    ::size_type size_type;
+
+  template<uint32_t N>
+  constexpr_basic_string(const char(&str)[N])
+    : len(N-1), arr(str)
+  {
+  }
+
+private:
+  const size_type len;
+  const char* const arr;
+};
+
+typedef basic_string<char> string;
+typedef basic_string<wchar_t> wstring;
+
+typedef constexpr_basic_string<char> constexpr_string;
+typedef constexpr_basic_string<wchar_t> constexpr_wstring;
+
+}
+
+#endif

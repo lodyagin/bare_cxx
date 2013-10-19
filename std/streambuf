@@ -1,0 +1,61 @@
+// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+/** 
+ * @file
+ *
+ * This file is a part of Bare C++ library. Bare C++
+ * library is a standard library specially designed for
+ * systems without memory protection like exokernel
+ * operating systems.
+ *
+ * @author Sergei Lodyagin <serg@kogorta.dp.ua>
+ * @copyright (C) 2013 Cohors LLC
+ *
+ */
+
+#ifndef _STREAMBUF_HEADER_
+#define _STREAMBUF_HEADER_
+
+#include <config.bare>
+#include <string>
+
+namespace _STD {
+
+/**
+  * It is not close to the standard yet.
+  * @author Sergei Lodyagin
+  */
+template <
+  class CharT,
+  class Traits = std::char_traits<CharT>
+>
+class basic_streambuf
+{
+public:
+  typedef CharT char_type;
+  typedef Traits traits_type;
+  typedef Traits::int_type int_type;
+  typedef Traits::off_type off_type;
+
+  // FIXME virtual
+  ~basic_streambuf {}
+
+  int pubsync() { return sync(); }
+
+  // FIXME move to a derived class
+  int_type sputc(char_type ch)
+  {
+    b_output_char(ch);
+    return Traits::to_int_type(ch);
+  }
+
+protected:
+  // FIXME virtual
+  int sync() { return 0; }
+};
+
+typedef basic_streambuf<char> streambuf;
+typedef basic_wstreambuf<wchar_t> wstreambuf;
+
+}
+
+#endif

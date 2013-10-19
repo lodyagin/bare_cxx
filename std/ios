@@ -1,0 +1,121 @@
+// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+/** 
+ * @file
+ *
+ * This file is a part of Bare C++ library. Bare C++
+ * library is a standard library specially designed for
+ * systems without memory protection like exokernel
+ * operating systems.
+ *
+ * @author Sergei Lodyagin <serg@kogorta.dp.ua>
+ * @copyright (C) 2013 Cohors LLC
+ *
+ */
+
+#ifndef _IOS_HEADER_
+#define _IOS_HEADER_
+
+#include <config.bare>
+#include <cwchar>
+#include <cstdint>
+#include <streambuf>
+
+namespace _STD {
+
+typedef intmax_t streamoff;
+
+template<class CharT>
+class char_traits;
+
+template<class State>
+class fpos
+{
+//TODO
+};
+
+typedef std::fpos<mbstate_t> streampos;
+
+class ios_base
+{
+public:
+  ios_base(const ios_base&) = delete;
+
+  // FIXME virtual
+  ~ios_base() {}
+
+protected:
+  ios_base() {}
+}; 
+
+template <
+  class CharT,
+  class Traits = char_traits<CharT>
+> 
+class basic_ios : public ios_base
+{
+public:
+  typedef CharT char_type;
+  typedef Traits traits_type;
+  typedef typename Traits::int_type int_type;
+  typedef typename Traits::pos_type post_type;
+  typedef typename Traits::off_type off_type;
+
+  explicit basic_ios(basic_streambuf<CharT, Traits>* sb);
+  basic_ios(const basic_ios&) = delete;
+  basic_ios& operator=(const basic_ios&) = delete;
+
+  // FIXME virtual
+  virtual ~basic_ios() {}
+
+  bool good() const
+  {
+    // TODO
+    return true;
+  }
+
+  basic_streambuf<CharT,Traits>* rdbuf() const
+  {
+    return buf;
+  }
+		
+  basic_streambuf<CharT,Traits>* rdbuf
+    (std::basic_streambuf<CharT, Traits>* sb)
+  {
+    auto old_buf = buf;
+    sb.clear();
+    buf = sb;
+    return old_buf;
+  }
+
+  basic_ostream<CharT,Traits>* tie() const
+  {
+    return tied;
+  }
+		
+  basic_ostream<CharT,Traits>* tie
+    (std::basic_ostream<CharT,Traits>* strm)
+  {
+    auto old_tied = tied;
+    tied = strm;
+    return old_tied;
+  }
+  
+		
+protected:
+  basic_ios() {}
+  void init(std::basic_streambuf<CharT,Traits>* sb)
+  {
+    buf = sb;
+  }
+
+private:
+  basic_streambuf<CharT, Traits>* buf = nullptr;
+  basic_ostream<CharT, Traits>* tied = nullptr;
+}
+
+typedef basic_ios<char> ios;
+typedef basic_ios<wchar_t> wios;		
+		
+}
+
+#endif
