@@ -1,3 +1,6 @@
+project(bare_c++lib_tests CXX)
+cmake_minimum_required(VERSION 2.8)
+
 macro(pythonize_bool var)
   if (${var})
     set(${var} True)
@@ -42,7 +45,7 @@ if(PYTHONINTERP_FOUND)
             ${LIT_EXECUTABLE}
             ${LIT_ARGS}
             ${CMAKE_CURRENT_BINARY_DIR}
-    DEPENDS cxx
+#    DEPENDS cxx
     COMMENT "Running libcxx tests")
 else()
   message(WARNING "Could not find Python, no check target will be available!")
