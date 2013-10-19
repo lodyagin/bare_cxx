@@ -14,9 +14,12 @@
 #ifndef _CSTDLIB_HEADER
 #define _CSTDLIB_HEADER
 
+#include <config.bare>
 #include <cstdint>
 
 namespace _STD {
+
+void abort() [[noreturn]] ;
 
 struct div_t
 {

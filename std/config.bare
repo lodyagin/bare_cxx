@@ -1,0 +1,15 @@
+// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+/** 
+ * @file
+ *
+ * General developer-mode configuration. Should be removed,
+ *
+ * @author Sergei Lodyagin <serg@kogorta.dp.ua>
+ * @copyright (C) 2013 Cohors LLC
+ *
+ */
+
+
+#ifndef _STD
+#define _STD std
+#endif

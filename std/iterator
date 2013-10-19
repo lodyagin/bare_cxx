@@ -15,8 +15,9 @@
 #ifndef _ITERATOR_HEADER_
 #define _ITERATOR_HEADER_
 
-#include <algorithm>
-#include "cstddef"
+#include <config.bare>
+//#include <algorithm>
+#include <cstddef>
 
 namespace _STD {
 

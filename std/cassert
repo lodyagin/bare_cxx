@@ -1,0 +1,32 @@
+// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+/** 
+ * @file
+ *
+ * This file is a part of Bare C++ library. Bare C++
+ * library is a standard library specially designed for
+ * systems without memory protection like exokernel
+ * operating systems.
+ *
+ * @author Sergei Lodyagin <serg@kogorta.dp.ua>
+ * @copyright (C) 2013 Cohors LLC
+ *
+ */
+
+#ifndef _CASSERT_HEADER
+#define _CASSERT_HEADER
+
+#include <config.bare>
+#include <iostream>
+
+#ifndef NDEBUG
+#define assert(cond) ((void)0)
+#else
+#define assert(cond) \
+  do { \
+    std::cerr << __FILE__ << ':' << __LINE__ << ':' \
+              << __FUNCTION << ":Assertion `" << #cond \
+              << "' failed.\nAborted"; \
+    abort(); \
+  } while(0)
+
+#endif

@@ -15,9 +15,9 @@
 #ifndef _ARRAY_HEADER_
 #define _ARRAY_HEADER_
 
-//#include <type_traits>
-#include "iterator"
-#include "cstddef"
+#include <config.bare>
+#include <iterator>
+#include <cstddef>
 
 namespace _STD {
 

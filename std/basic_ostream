@@ -1,0 +1,35 @@
+// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+/** 
+ * @file
+ *
+ * This file is a part of Bare C++ library. Bare C++
+ * library is a standard library specially designed for
+ * systems without memory protection like exokernel
+ * operating systems.
+ *
+ * @author Sergei Lodyagin <serg@kogorta.dp.ua>
+ * @copyright (C) 2013 Cohors LLC
+ *
+ */
+
+#ifndef _BASIC_OSTREAM_HEADER
+#define _BASIC_OSTREAM_HEADER
+
+#include <config.bare>
+
+namespace _STD {
+
+template<class CharT>
+class basic_ostream
+{
+public:
+  typedef CharT char_type;
+};
+
+typedef basic_ostream<char> ostream;
+typedef basic_ostream<wchar_t> wostream;
+
+}
+
+#endif
+
