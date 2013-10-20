@@ -37,7 +37,7 @@ public:
   explicit basic_ostream
     (std::basic_streambuf<CharT, Traits>* sb)
   {
-    basic_ios::init(sb);
+    basic_ios<CharT, Traits>::init(sb);
   }
 
   // FIXME virtual
@@ -61,9 +61,9 @@ public:
       on failbit are enabled in this output stream's
       exception mask, throws ios_base::failure.  */
 
-      if ((auto tied = os.tie())) 
+      auto tied = os.tie();
+      if (tied) 
         tied->flush();
-      return ok;
     }
 
     ~sentry() {}
@@ -89,19 +89,19 @@ basic_ostream<CharT,Traits>&
 operator << (basic_ostream<CharT,Traits>& os, CharT ch)
 {
   // TODO padding
-  basic_ostream::sentry sentry;
+  typename basic_ostream<CharT,Traits>::sentry sentry;
   if (sentry) {
     //TODO try/catch
-    rdbuf() -> sputc(ch);
+    os.rdbuf() -> sputc(ch);
   }
-  return *this;
+  return os;
 }	
 
-template< class CharT, class Traits>
-basic_ostream<CharT,Traits>& 
+template<class Traits>
+basic_ostream<char, Traits>& 
   operator << 
-    (basic_ostream<CharT,Traits>& os, 
-     const basic_string<CharT>& ch)
+    (basic_ostream<char,Traits>& os, 
+     constexpr_basic_string<char> ch)
 {
 }	
 

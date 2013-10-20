@@ -33,11 +33,11 @@ class basic_streambuf
 public:
   typedef CharT char_type;
   typedef Traits traits_type;
-  typedef Traits::int_type int_type;
-  typedef Traits::off_type off_type;
+  typedef typename Traits::int_type int_type;
+  typedef typename Traits::off_type off_type;
 
   // FIXME virtual
-  ~basic_streambuf {}
+  ~basic_streambuf() {}
 
   int pubsync() { return sync(); }
 
@@ -54,7 +54,7 @@ protected:
 };
 
 typedef basic_streambuf<char> streambuf;
-typedef basic_wstreambuf<wchar_t> wstreambuf;
+typedef basic_streambuf<wchar_t> wstreambuf;
 
 }
 

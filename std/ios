@@ -19,21 +19,13 @@
 #include <cwchar>
 #include <cstdint>
 #include <streambuf>
+#include <string>
+#include <bits/streamtypes.h>
 
 namespace _STD {
 
-typedef intmax_t streamoff;
-
-template<class CharT>
-class char_traits;
-
-template<class State>
-class fpos
-{
-//TODO
-};
-
-typedef std::fpos<mbstate_t> streampos;
+template <class CharT, class Traits> 
+class basic_ostream;
 
 class ios_base
 {
@@ -111,7 +103,7 @@ protected:
 private:
   basic_streambuf<CharT, Traits>* buf = nullptr;
   basic_ostream<CharT, Traits>* tied = nullptr;
-}
+};
 
 typedef basic_ios<char> ios;
 typedef basic_ios<wchar_t> wios;		

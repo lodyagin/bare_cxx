@@ -12,23 +12,25 @@
  *
  */
 
-#ifndef _IOSTREAM_HEADER
-#define _IOSTREAM_HEADER
+#ifndef _STREAMTYPES_H_
+#define _STREAMTYPES_H_
 
-#include <config.bare>
-#include <ostream>
+#include <cwchar>
 
-namespace _STD {
+namespace std {
 
-extern std::ostream cout;
-extern std::wostream wcout;
+typedef intmax_t streamoff;
 
-extern std::ostream cerr;
-extern std::wostream wcerr;
+template<class State>
+class fpos
+{
+//TODO
+};
 
-extern std::ostream clog;
-extern std::wostream wclog;
+
+typedef fpos<mbstate_t> streampos;
 
 }
 
 #endif
+
