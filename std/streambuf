@@ -18,6 +18,12 @@
 #include <config.bare>
 #include <string>
 
+extern "C" {
+
+#include "bare/libBareMetal.h"
+
+}
+
 namespace _STD {
 
 /**
@@ -46,6 +52,16 @@ public:
   {
     b_output_char(ch);
     return Traits::to_int_type(ch);
+  }
+
+  // FIXME move to a derived class, make calling virtual
+  // xsputn 
+  //! Non-standard arguments version, use a safe
+  //! size-limted string instead of const char* + count.
+  streamsize sputn(constexpr_basic_string<char_type> s)
+  {
+    b_output_chars(s.data(), s.size());
+    return s.size();
   }
 
 protected:

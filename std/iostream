@@ -21,6 +21,7 @@
 namespace _STD {
 
 extern std::ostream cout;
+/*
 extern std::wostream wcout;
 
 extern std::ostream cerr;
@@ -28,6 +29,7 @@ extern std::wostream wcerr;
 
 extern std::ostream clog;
 extern std::wostream wclog;
+*/
 
 }
 

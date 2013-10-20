@@ -12,26 +12,27 @@
  *
  */
 
-#ifndef _STREAMTYPES_H_
-#define _STREAMTYPES_H_
-
-#include <cwchar>
+#include <iostream>
 
 namespace std {
 
-typedef intmax_t streamoff;
-typedef intmax_t streamsize;
+// FIXME std::atomic, see http://stackoverflow.com/questions/10521263/standard-way-to-implement-initializer-like-ios-baseinit
+static unsigned int nifty_counter;
 
-template<class State>
-class fpos
+ios_base::Init::Init()
 {
-//TODO
-};
-
-
-typedef fpos<mbstate_t> streampos;
-
+  if (nifty_counter++ == 0)
+  {
+    new(&cout) ostream(new streambuf());
+  }
 }
 
-#endif
+ios_base::Init::~Init()
+{
+  if (--nifty_counter == 0)
+  {
+    cout.flush();
+  }
+}
 
+}

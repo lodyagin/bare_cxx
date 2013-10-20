@@ -140,6 +140,10 @@ public:
   {
   }
 
+  size_type size() const { return len; }
+  const char* data() const { return arr; }
+  const char* c_str() const { return arr; }
+
 private:
   const size_type len;
   const char* const arr;
