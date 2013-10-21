@@ -25,9 +25,13 @@ template <
   class CharT,
   class Traits = std::char_traits<CharT>
 >
-class _terminal_out_streambuf 
+class _terminal_out_basic_streambuf 
   : public basic_streambuf<CharT, Traits>
 {
+  typedef typename 
+    basic_streambuf<CharT, Traits>::char_type 
+    char_type;
+
 protected:
   streamsize xsputn
     (const char_type* s, std::streamsize count) override
@@ -37,6 +41,11 @@ protected:
   }
 };
 
+typedef _terminal_out_basic_streambuf<char>
+  _terminal_out_streambuf;
+
+extern _terminal_out_streambuf 
+  _terminal_out_streambuf_inst;
 
 // FIXME std::atomic, see http://stackoverflow.com/questions/10521263/standard-way-to-implement-initializer-like-ios-baseinit
 static unsigned int nifty_counter;
@@ -45,7 +54,10 @@ ios_base::Init::Init()
 {
   if (nifty_counter++ == 0)
   {
-    new(&cout) ostream(new _terminal_out_streambuf());
+    new(&_terminal_out_streambuf_inst) 
+      _terminal_out_streambuf;
+
+    new(&cout) ostream; // &_terminal_out_streambuf_inst;
   }
 }
 
