@@ -34,12 +34,118 @@ public:
   typedef streampos pos_type;
   typedef mbstate_t state_type;
 
-  static constexpr int_type to_int_type(char_type c)
+  static void assign(char_type& r, const char_type& a)
   {
-    return c;
+    r = a;
   }
 
-  static constexpr int_type eof() { return -1; }
+  static char_type* assign
+    (char_type* p, std::size_t count, char_type a)
+  {
+    char_type* begin = p;
+    while(count-- > 0)
+      *p++ = a;
+    return begin;
+  }
+
+  static bool eq(char_type a, char_type b)
+  {
+    return a == b;
+  }
+
+  static bool lt(char_type a, char_type b)
+  {
+    return a < b;
+  }
+
+  static char_type* move
+    (char_type* dest, 
+     const char_type* src, 
+     std::size_t count)
+  {
+    char_type* begin = dest;
+    if (dest < src) {
+      while(count-- > 0)
+        *dest++ = *src++;
+    }
+    else if (dest > src)
+    {
+      char_type* dest_p = dest + count;
+      const char_type* src_p = src + count;
+      while(count-- > 0)
+        *--dest_p = *--src_p;
+    }
+    return begin;
+  }
+
+  static char_type* copy
+    (char_type* dest,
+     const char_type* src, 
+     std::size_t count)
+  {
+     char_type* begin = dest;
+     while(count-- > 0)
+        *dest++ = *src++;
+     return begin;
+  }
+
+  static int compare
+    (const char_type* s1, 
+     const char_type* s2, 
+     std::size_t count)
+  {
+    while (count-- > 0 && *s1++ == *s2++)
+      ;
+
+    if (count == 0)
+      return 0;
+    else 
+      return (*(s1-1) < *(s2-1)) ? -1 : 1;
+  }
+
+  static std::size_t length(const char_type* s)
+  {
+    std::size_t count = 0;
+    while (!(s++)->isNull())
+      count++;
+    return count;
+  }
+
+  static const char_type* find
+    (const char_type* p, 
+     std::size_t count, 
+     const char_type& ch)
+  {
+    while(count-- > 0)
+      if (*p++ == ch)
+        return p - 1;
+    return nullptr;
+  }
+
+  static char_type to_char_type(int_type c)
+  {
+    return QChar((uint16_t) c);
+  }
+
+  static int_type to_int_type(char_type c)
+  {
+    return (int_type) c.unicode();
+  }
+
+  static bool eq_int_type(int_type c1, int_type c2)
+  {
+    return c1 == c2;
+  }
+
+  static constexpr int_type eof()
+  {
+    return -1;
+  }
+
+  static constexpr int_type not_eof(int_type e)
+  {
+    return (e == -1) ? e : 0;
+  }
 };
 
 #if 0
