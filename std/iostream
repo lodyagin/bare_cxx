@@ -16,18 +16,18 @@
 #define _IOSTREAM_HEADER
 
 #include <config.bare>
-#include <basic_ostream>
+#include <ostream>
 
 namespace _STD {
 
-//extern std::ostream cout;
-//extern std::wostream wcout;
+extern std::ostream cout;
+extern std::wostream wcout;
 
 extern std::ostream cerr;
-//extern std::wostream wcerr;
+extern std::wostream wcerr;
 
-//extern std::ostream clog;
-//extern std::wostream wclog;
+extern std::ostream clog;
+extern std::wostream wclog;
 
 }
 
