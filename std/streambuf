@@ -18,6 +18,12 @@
 #include <config.bare>
 #include <string>
 
+extern "C" {
+
+#include "bare/libBareMetal.h"
+
+}
+
 namespace _STD {
 
 /**
@@ -33,28 +39,37 @@ class basic_streambuf
 public:
   typedef CharT char_type;
   typedef Traits traits_type;
-  typedef Traits::int_type int_type;
-  typedef Traits::off_type off_type;
+  typedef typename Traits::int_type int_type;
+  typedef typename Traits::off_type off_type;
 
-  // FIXME virtual
-  ~basic_streambuf {}
+  virtual ~basic_streambuf() {}
 
   int pubsync() { return sync(); }
 
-  // FIXME move to a derived class
   int_type sputc(char_type ch)
   {
-    b_output_char(ch);
+    xsputn(&ch, 1);
     return Traits::to_int_type(ch);
   }
 
+  //! A version with a non-standard argument, we use a safe
+  //! size-limted string instead of const char* + count.
+  streamsize sputn(constexpr_basic_string<char_type> s)
+  {
+    xsputn(s.data(), s.size());
+    return s.size();
+  }
+
 protected:
-  // FIXME virtual
-  int sync() { return 0; }
+  virtual int sync() { return 0; }
+
+  virtual streamsize xsputn
+    (const char_type* s, std::streamsize count) 
+  {}
 };
 
 typedef basic_streambuf<char> streambuf;
-typedef basic_wstreambuf<wchar_t> wstreambuf;
+typedef basic_streambuf<wchar_t> wstreambuf;
 
 }
 

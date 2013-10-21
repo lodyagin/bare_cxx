@@ -17,21 +17,9 @@
 
 #include <config.bare>
 #include <cstdint>
+#include <bits/streamtypes.h>
 
 namespace _STD {
-
-struct mbstate_t {};
-
-template<class State>
-class fpos
-{
-//TODO
-};
-
-typedef intmax_t streamoff;
-
-
-typedef std::fpos<mbstate_t> streampos;
 
 template<class CharT>
 class char_traits {};
@@ -39,6 +27,7 @@ class char_traits {};
 template<>
 class char_traits<char>
 {
+public:
   typedef char char_type;
   typedef int int_type;
   typedef streamoff off_type; 
@@ -150,6 +139,10 @@ public:
     : len(N-1), arr(str)
   {
   }
+
+  size_type size() const { return len; }
+  const char* data() const { return arr; }
+  const char* c_str() const { return arr; }
 
 private:
   const size_type len;
