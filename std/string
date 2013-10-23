@@ -17,6 +17,7 @@
 
 #include <config.bare>
 #include <cstdint>
+#include <cstddef>
 #include <bits/streamtypes.h>
 
 namespace _STD {
@@ -106,7 +107,7 @@ public:
   static std::size_t length(const char_type* s)
   {
     std::size_t count = 0;
-    while (!(s++)->isNull())
+    while (*s++)
       count++;
     return count;
   }
@@ -124,12 +125,12 @@ public:
 
   static char_type to_char_type(int_type c)
   {
-    return QChar((uint16_t) c);
+    return (char) (c & 0xff);
   }
 
   static int_type to_int_type(char_type c)
   {
-    return (int_type) c.unicode();
+    return (int_type) c;
   }
 
   static bool eq_int_type(int_type c1, int_type c2)

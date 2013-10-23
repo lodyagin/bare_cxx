@@ -47,7 +47,7 @@ public:
   // operator=
 		
   // TODO
-  basic_ostream& flush() {}
+  basic_ostream& flush() { return *this; }
 
   class sentry
   {

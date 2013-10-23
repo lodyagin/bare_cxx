@@ -13,6 +13,7 @@
  */
 
 #include <iostream>
+#include <new>
 
 namespace std {
 
@@ -55,9 +56,9 @@ ios_base::Init::Init()
   if (nifty_counter++ == 0)
   {
     new(&_terminal_out_streambuf_inst) 
-      _terminal_out_streambuf;
+      _terminal_out_streambuf();
 
-    new(&cout) ostream; // &_terminal_out_streambuf_inst;
+    new(&cout) ostream(&_terminal_out_streambuf_inst);
   }
 }
 
