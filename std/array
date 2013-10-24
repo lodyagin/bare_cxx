@@ -31,7 +31,7 @@ class array;
  * start. As a result a difference between two iterators
  * count overlaps.
  *
- * FIXME errors with -fstrict-overflow
+ * FIXME errors with -fstrict-overflow (use -fwrapv?)
  *
  * @author Sergei Lodyagin
  */
