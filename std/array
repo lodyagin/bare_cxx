@@ -31,6 +31,8 @@ class array;
  * start. As a result a difference between two iterators
  * count overlaps.
  *
+ * FIXME errors with -fstrict-overflow
+ *
  * @author Sergei Lodyagin
  */
 template<class T, _STD::size_t N>
