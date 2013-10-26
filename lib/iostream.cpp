@@ -12,11 +12,23 @@
  *
  */
 
-#include <iostream>
 #include <new>
+#include <string>
+#include <streambuf>
+#include <ostream>
+
+namespace bare {
+
+inline void b_output_chars(const char *str, unsigned long nbr)
+{
+	asm volatile ("call *0x00100018" : : "S"(str), "c"(nbr));
+}
+
+}
 
 namespace std {
 
+using namespace bare;
 
 /**
   * Output to a terminal.
@@ -42,11 +54,23 @@ protected:
   }
 };
 
-typedef _terminal_out_basic_streambuf<char>
-  _terminal_out_streambuf;
+// T is a type to be constructed externally by a placement
+// new operator
+template<class T>
+union _externally_constructed
+{
+  _externally_constructed() {} // it is
+  ~_externally_constructed() {} // never
+  T m;
+};
 
-extern _terminal_out_streambuf 
-  _terminal_out_streambuf_inst;
+_externally_constructed
+  <_terminal_out_basic_streambuf<char>>
+    _terminal_out_streambuf_inst;
+
+_externally_constructed<basic_ostream<char>> cout;
+_externally_constructed<basic_ostream<char>> cerr;
+_externally_constructed<basic_ostream<char>> clog;
 
 // FIXME std::atomic, see http://stackoverflow.com/questions/10521263/standard-way-to-implement-initializer-like-ios-baseinit
 static unsigned int nifty_counter;
@@ -55,10 +79,15 @@ ios_base::Init::Init()
 {
   if (nifty_counter++ == 0)
   {
-    new(&_terminal_out_streambuf_inst) 
-      _terminal_out_streambuf();
+    new(&_terminal_out_streambuf_inst.m) 
+      _terminal_out_basic_streambuf<char>();
 
-    new(&cout) ostream(&_terminal_out_streambuf_inst);
+    new(&cout.m) ostream
+      (&_terminal_out_streambuf_inst.m);
+    new(&cerr.m) ostream
+      (&_terminal_out_streambuf_inst.m);
+    new(&clog.m) ostream
+      (&_terminal_out_streambuf_inst.m);
   }
 }
 
@@ -66,7 +95,7 @@ ios_base::Init::~Init()
 {
   if (--nifty_counter == 0)
   {
-    cout.flush();
+    cout.m.flush();
   }
 }
 

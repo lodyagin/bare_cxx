@@ -18,12 +18,6 @@
 #include <config.bare>
 #include <string>
 
-extern "C" {
-
-#include "bare/libBareMetal.h"
-
-}
-
 namespace _STD {
 
 /**

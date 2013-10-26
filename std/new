@@ -17,6 +17,7 @@
 
 #include <cstddef>
 
+// TODO check ptr inside the current process
 void* operator new (std::size_t, void* ptr)
 {
   return ptr;
