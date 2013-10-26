@@ -16,6 +16,7 @@
 #include <string>
 #include <streambuf>
 #include <ostream>
+#include <bits/ext_constr.h>
 
 namespace bare {
 
@@ -29,6 +30,7 @@ inline void b_output_chars(const char *str, unsigned long nbr)
 namespace std {
 
 using namespace bare;
+using namespace bits;
 
 /**
   * Output to a terminal.
@@ -54,16 +56,6 @@ protected:
   }
 };
 
-// T is a type to be constructed externally by a placement
-// new operator
-template<class T>
-union _externally_constructed
-{
-  _externally_constructed() {} // it is
-  ~_externally_constructed() {} // never
-  T m;
-};
-
 _externally_constructed
   <_terminal_out_basic_streambuf<char>>
     _terminal_out_streambuf_inst;
@@ -72,7 +64,8 @@ _externally_constructed<basic_ostream<char>> cout;
 _externally_constructed<basic_ostream<char>> cerr;
 _externally_constructed<basic_ostream<char>> clog;
 
-// FIXME std::atomic, see http://stackoverflow.com/questions/10521263/standard-way-to-implement-initializer-like-ios-baseinit
+// Chec the compiler inserts a thread guard.
+// Answer http://stackoverflow.com/questions/10521263/standard-way-to-implement-initializer-like-ios-baseinit
 static unsigned int nifty_counter;
 
 ios_base::Init::Init()
