@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 2.8)
 #>)
 
 set(CMAKE_CXX_FLAGS 
-  "-O2 -std=c++1y -Wall -nostdinc -nostdinc++")
+  "-O2 -std=c++11 -m64 -Wall -nostdinc -nostdinc++ -nostdlib -fno-rtti -fno-exceptions")
 
 add_subdirectory(lib)
 
