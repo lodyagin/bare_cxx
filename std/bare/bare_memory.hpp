@@ -37,6 +37,7 @@ constexpr T n_bits_mask()
   return pow2x<n+1>::value - 1;
 }
 
+//TODO check errors with -fstrict-overflow
 template<size_t n_bits, class word_t = uintmax_t>
 class bitmap
 {
