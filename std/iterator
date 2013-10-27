@@ -131,9 +131,9 @@ public:
     return *this;
   }
 
-  reverse_iterator operator + (difference_type n) &&
+  reverse_iterator operator + (difference_type n)
   {
-    return reverse_iterator(std::forward(current) - n);
+    return reverse_iterator(current - n);
   }
 
   reverse_iterator& operator -- ()
@@ -155,9 +155,9 @@ public:
     return *this;
   }
 
-  reverse_iterator operator - (difference_type n) &&
+  reverse_iterator operator - (difference_type n)
   {
-    return reverse_iterator(std::forward(current) + n);
+    return reverse_iterator(current + n);
   }
 
   reference operator [] (difference_type n) const

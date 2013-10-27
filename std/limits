@@ -1,0 +1,131 @@
+// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+/** 
+ * @file
+ *
+ * This file is a part of Bare C++ library. Bare C++
+ * library is a standard library specially designed for
+ * systems without memory protection like exokernel
+ * operating systems.
+ *
+ * @author Sergei Lodyagin <serg@kogorta.dp.ua>
+ * @copyright (C) 2013 Cohors LLC
+ *
+ */
+
+#ifndef _LIMITS_HEADER_
+#define _LIMITS_HEADER_
+
+#include <bits/constexpr_math.h>
+
+namespace std {
+
+using namespace bits;
+
+template<class T>
+class numeric_limits
+{
+public:
+  static constexpr bool is_specialized = false;
+};
+
+template<>
+class numeric_limits<unsigned long long>
+{
+public:
+  static constexpr bool is_specialized = true;
+  static constexpr unsigned long long min()
+  {
+    return 0;
+  }
+
+  static constexpr unsigned long long max()
+  {
+    return (unsigned long long) -1;
+  }
+};
+
+template<>
+class numeric_limits<long long>
+{
+public:
+  static constexpr bool is_specialized = true;
+  static constexpr long long min()
+  {
+    return - pow2x<sizeof(long long) * 8 - 1>::value;
+  }
+
+  static constexpr long long max()
+  {
+    return pow2x<sizeof(long long) * 8 - 1>::value - 1;
+  }
+};
+
+template<>
+class numeric_limits<unsigned long>
+{
+public:
+  static constexpr bool is_specialized = true;
+  static constexpr unsigned long min()
+  {
+    return 0;
+  }
+
+  static constexpr unsigned long max()
+  {
+    return (unsigned long) -1;
+  }
+};
+
+template<>
+class numeric_limits<long>
+{
+public:
+  static constexpr bool is_specialized = true;
+  static constexpr long min()
+  {
+    return - pow2x<sizeof(long) * 8 - 1>::value;
+  }
+
+  static constexpr long max()
+  {
+    return pow2x<sizeof(long) * 8 - 1>::value - 1;
+  }
+};
+
+template<>
+class numeric_limits<unsigned int>
+{
+public:
+  static constexpr bool is_specialized = true;
+  static constexpr unsigned int min()
+  {
+    return 0;
+  }
+
+  static constexpr unsigned int max()
+  {
+    return (unsigned int) -1;
+  }
+};
+
+template<>
+class numeric_limits<int>
+{
+public:
+  static constexpr bool is_specialized = true;
+  static constexpr int min()
+  {
+    return - pow2x<sizeof(int) * 8 - 1>::value;
+  }
+
+  static constexpr int max()
+  {
+    return pow2x<sizeof(int) * 8 - 1>::value - 1;
+  }
+};
+
+}
+
+#endif
+
+

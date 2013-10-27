@@ -12,8 +12,8 @@
  *
  */
 
-#ifndef _STREAMTYPES_H_
-#define _STREAMTYPES_H_
+#ifndef _STD_BITS_STREAMTYPES_H
+#define _STD_BITS_STREAMTYPES_H
 
 #include <cwchar>
 

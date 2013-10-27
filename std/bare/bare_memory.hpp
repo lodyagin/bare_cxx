@@ -1,41 +1,19 @@
-#ifndef BARE_MEMORY_HPP
-#define BARE_MEMORY_HPP
+// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+/** 
+ * @file
+ *
+ * @author Sergei Lodyagin <serg@kogorta.dp.ua>
+ * @copyright (C) 2013 Cohors LLC
+ *
+ */
+
+#ifndef _BARE_MEMORY_HPP
+#define _BARE_MEMORY_HPP
 
 #include <cstddef>
+#include <bits/constexpr_math.h>
 
 namespace bare {
-
-// FIXME add overflow
-template<uintmax_t x>
-struct log2x 
-{
-  enum { value = log2x<(x >> 1)>::value + 1 };
-};
-
-template<> 
-struct log2x<1>
-{
-  enum { value = 0 };
-};
-
-template<uint8_t x>
-struct pow2x
-{
-  enum { value = 2 * pow2x<x - 1>::value };
-};
-
-template<>
-struct pow2x<0>
-{
-  enum { value = 1 };
-};
-
-//! Return mask with n lower bits set
-template<uint8_t n, class T>
-constexpr T n_bits_mask()
-{
-  return pow2x<n+1>::value - 1;
-}
 
 //TODO check errors with -fstrict-overflow
 template<size_t n_bits, class word_t = uintmax_t>

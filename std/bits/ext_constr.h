@@ -12,8 +12,8 @@
  *
  */
 
-#ifndef _BITS_EXT_CONSTR_H
-#define _BITS_EXT_CONSTR_H
+#ifndef _STD_BITS_EXT_CONSTR_H
+#define _STD_BITS_EXT_CONSTR_H
 
 namespace std {
 namespace bits {
