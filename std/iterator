@@ -118,11 +118,16 @@ public:
     return *this;
   }
 
-  reverse_iterator operator ++ (int)
+  reverse_iterator operator ++ (int) &
   {
     reverse_iterator copy(*this);
     ++(*this);
     return copy;
+  }
+
+  reverse_iterator operator ++ (int) &&
+  {
+    return *this;
   }
 
   reverse_iterator& operator += (difference_type n)
@@ -131,9 +136,15 @@ public:
     return *this;
   }
 
-  reverse_iterator operator + (difference_type n)
+  reverse_iterator operator + (difference_type n) const &
   {
     return reverse_iterator(current - n);
+  }
+
+  reverse_iterator operator + (difference_type n) &&
+  {
+    current -= n;
+    return *this;
   }
 
   reverse_iterator& operator -- ()
@@ -142,11 +153,16 @@ public:
     return *this;
   }
 
-  reverse_iterator operator -- (int)
+  reverse_iterator operator -- (int) &
   {
     reverse_iterator copy(*this);
     --(*this);
     return copy;
+  }
+
+  reverse_iterator operator -- (int) &&
+  {
+    return *this;
   }
 
   reverse_iterator& operator -= (difference_type n)
@@ -155,9 +171,15 @@ public:
     return *this;
   }
 
-  reverse_iterator operator - (difference_type n)
+  reverse_iterator operator - (difference_type n) const &
   {
     return reverse_iterator(current + n);
+  }
+
+  reverse_iterator operator - (difference_type n) &&
+  {
+    current += n;
+    return *this;
   }
 
   reference operator [] (difference_type n) const
