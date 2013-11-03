@@ -101,7 +101,7 @@ public:
     return current;
   }
 
-  reverse_iterator operator * () const
+  reference operator * () const
   {
     Iterator copy(current);
     return *--copy;
@@ -193,42 +193,43 @@ protected:
 
 template<class I1, class I2>
 bool operator == 
-  (const reverse_iterator<I1>& lhs, const reverse_iterator<I1>& rhs)
+  ( const reverse_iterator<I1>& lhs, 
+    const reverse_iterator<I2>& rhs)
 {
   return lhs.base() == rhs.base();
 }
 
 template<class I1, class I2>
 bool operator != 
-  (const reverse_iterator<I1>& lhs, const reverse_iterator<I1>& rhs)
+  (const reverse_iterator<I1>& lhs, const reverse_iterator<I2>& rhs)
 {
   return lhs.base() != rhs.base();
 }
 
 template<class I1, class I2>
 bool operator <
-  (const reverse_iterator<I1>& lhs, const reverse_iterator<I1>& rhs)
+  (const reverse_iterator<I1>& lhs, const reverse_iterator<I2>& rhs)
 {
   return lhs.base() > rhs.base();
 }
 
 template<class I1, class I2>
 bool operator <=
-  (const reverse_iterator<I1>& lhs, const reverse_iterator<I1>& rhs)
+  (const reverse_iterator<I1>& lhs, const reverse_iterator<I2>& rhs)
 {
   return lhs.base() >= rhs.base();
 }
 
 template<class I1, class I2>
 bool operator >
-  (const reverse_iterator<I1>& lhs, const reverse_iterator<I1>& rhs)
+  (const reverse_iterator<I1>& lhs, const reverse_iterator<I2>& rhs)
 {
   return lhs.base() < rhs.base();
 }
 
 template<class I1, class I2>
 bool operator >=
-  (const reverse_iterator<I1>& lhs, const reverse_iterator<I1>& rhs)
+  (const reverse_iterator<I1>& lhs, const reverse_iterator<I2>& rhs)
 {
   return lhs.base() <= rhs.base();
 }
@@ -243,7 +244,7 @@ reverse_iterator<I> operator +
 
 template<class I1, class I2>
 auto operator -
-  (const reverse_iterator<I1>& lhs, const reverse_iterator<I1>& rhs)
+  (const reverse_iterator<I1>& lhs, const reverse_iterator<I2>& rhs)
   -> decltype(rhs.base() - lhs.base())
 {
   return rhs.base() - lhs.base();

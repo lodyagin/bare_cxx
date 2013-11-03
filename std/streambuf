@@ -55,6 +55,8 @@ public:
   }
 
 protected:
+//  virtual locale imbue(const locale& loc) {}
+
   virtual int sync() { return 0; }
 
   virtual streamsize xsputn

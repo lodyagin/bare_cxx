@@ -16,6 +16,7 @@
 #include <array>
 #include <iterator>
 #include <algorithm>
+#include <new>
 #include <bits/ext_constr.h>
 
 using namespace std;
@@ -33,24 +34,26 @@ public:
   };
   using atex_type = array<info, size>;
   using reverse_it = reverse_iterator
-    <atex_type::iterator>;
+    <typename atex_type::iterator>;
 
   int reg
     ( void (*destructor) (void*), 
       void *arg,
       void *dso )
   {
-    if (next == atex.end())
+    auto i = atex.begin() + next;
+    if (i == atex.end())
       return -1; // no space in the table
-    *next++ = {destructor, obj, dso};
+    *i++ = {destructor, arg, dso};
     return 0;
   }
 
   void call(void* dso)
   {
+    auto i = atex.begin() + next;
     if (dso == nullptr) {
       for_each
-        ( reverse_it(next), atex.rbegin(),
+        ( reverse_it(i), atex.rbegin(),
           [](info& i)
           {
             if (i.destructor) {
@@ -61,8 +64,8 @@ public:
     }
     else {
       for_each
-        ( reverse_it(next), atex.rbegin(),
-          [](info& i)
+        ( reverse_it(i), atex.rbegin(),
+          [&dso](info& i)
           {
             if (i.dso == dso && i.destructor) {
               (*i.destructor) (i.obj);
@@ -73,23 +76,26 @@ public:
   }
 
 protected:
-  atex_type atex = { 0 };
-  atex_type::iterator next = atex.begin();
+  atex_type atex; // = { 0 };
+  // use an index instead of an iterator for allow compiler
+  // 0-initialize the whole object.
+  typename atex_type::size_type next; // = 0;
 };
 
-static _externally_constructed<_atexit_array_t<64>> 
+typedef _atexit_array_t<64> _atexit_array_type;
+static _externally_constructed<_atexit_array_type> 
   _atexit_array; 
 
 // it should countain the uniq value per dl module
 void *__dso_handle = &_atexit_array;
 
-inline static _atexit_array_init()
+inline static void _atexit_array_init()
 {
   // is thread-protected by compiler (compare to out-of
   // function scope)?
   static bool inited = false;
-  if (__builting_expect(!inited, 0)) {
-    new(&_atexit_array.m) declspec(_atexit_array.m);
+  if (__builtin_expect(!inited, 0)) {
+    new(&_atexit_array.m) _atexit_array_type();
     inited = true;
   }
 }

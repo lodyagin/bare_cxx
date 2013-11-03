@@ -12,26 +12,20 @@
  *
  */
 
-#ifndef _STD_BITS_EXT_CONSTR_H
-#define _STD_BITS_EXT_CONSTR_H
+#ifndef _UTILITY_HEADER_
+#define _UTILITY_HEADER_
+
+#include <type_traits>
 
 namespace std {
-namespace bits {
 
-//! T is a type to be constructed externally by a placement
-//! new operator
 template<class T>
-union _externally_constructed
+constexpr remove_reference_t<T>&& move(T&& t)
 {
-  typedef T type;
-
-  _externally_constructed() {} // it is
-  ~_externally_constructed() {} // never
-  T m;
-};
-
-}
+  return static_cast<remove_reference_t<T>&&>(t); 
 }
 
+}
 
 #endif
+

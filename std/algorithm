@@ -16,8 +16,20 @@
 #define _ALGORITHM_HEADER_
 
 #include <config.bare>
+#include <utility>
+#include <iterator>
 
 namespace _STD {
+
+template< class InputIt, class UnaryFunction >
+UnaryFunction for_each
+  ( InputIt first, InputIt last, UnaryFunction f )
+{
+  for (; first != last; ++first)
+    f(*first);
+
+  return std::move(f);
+}
 
 // FIXME move semantic, noexcept specification
 template<class T>
@@ -33,6 +45,8 @@ void swap(T& a, T& b) noexcept
 template< class T2, size_t N >
 void swap( T2 (&a)[N], T2 (&b)[N]);
 */
+
+
 
 }
 

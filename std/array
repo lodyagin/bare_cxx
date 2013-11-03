@@ -26,6 +26,8 @@ namespace _STD {
 template<class T, _STD::size_t N>
 class array;
 
+namespace {
+
 /**
  * The std::array iterator implementation.
  * It is "cycled", iterator++ at the last cell jumps to
@@ -68,6 +70,7 @@ public:
   typedef T* pointer;
   typedef T& reference;
   typedef const T& const_reference;
+  constexpr static size_type array_size = N;
 
   //! A value-initialized forward iterator
   _array_iterator() noexcept
@@ -253,6 +256,8 @@ inline _array_iterator<T,N> operator -
   return i - n;
 }
 
+}
+
 /**
  * The std::array implementation.
  * It is "cycled", iterator++ at the last cell jumps to
@@ -267,19 +272,25 @@ class array
   static_assert(N >= 0, "array: N is negative");
   static_assert(N < numeric_limits<int32_t>::max(),
                 "array: wrong specialization");
-
-  T arr[N];
 public:
 //  static_assert(is_destructible<T>, 
 //               "array::value_type must be Destructible");
 
   typedef _array_iterator<T, N> iterator;
   typedef const iterator const_iterator;
+  typedef std::reverse_iterator<iterator>
+    reverse_iterator;
+  typedef std::reverse_iterator<const iterator>
+    const_reverse_iterator;
   typedef typename iterator::value_type value_type;
   typedef typename iterator::size_type size_type;
   typedef typename iterator::reference reference;
   typedef typename iterator::const_reference const_reference;
   typedef typename iterator::difference_type difference_type;
+
+  //! It is public to allow the class be an aggregate (as
+  //! required).
+  T arr[N];
 
   //TODO std::out_of_range
   //reference at(size_type pos);
@@ -384,6 +395,36 @@ public:
     return iterator(arr, typename iterator::end_());
   }
 
+  reverse_iterator rbegin() noexcept
+  {
+    return reverse_iterator(end());
+  }
+
+  const_reverse_iterator rbegin() const noexcept
+  {
+    return reverse_iterator(end());
+  }
+
+  const_reverse_iterator crbegin() const noexcept
+  {
+    return reverse_iterator(end());
+  }
+
+  reverse_iterator rend() noexcept
+  {
+    return reverse_iterator(begin());
+  }
+
+  const_reverse_iterator rend() const noexcept
+  {
+    return reverse_iterator(begin());
+  }
+
+  const_reverse_iterator crend() const noexcept
+  {
+    return reverse_iterator(begin());
+  }
+
 };
 
 template< class T, std::size_t N >
@@ -445,22 +486,50 @@ bool operator>=( const array<T,N>& lhs,
 template< size_t I, class T, size_t N >
 constexpr T& get( array<T,N>& a )
 {
-  static_assert(I < N, "array: the index I is out of range");
+  static_assert(I < N,"array: the index I is out of range");
   return a[I];
 }
 		
 template< size_t I, class T, size_t N >
 constexpr T&& get( array<T,N>&& a )
 {
-  static_assert(I < N, "array: the index I is out of range");
-  return std::forward(a[I]); 
+  static_assert(I < N,"array: the index I is out of range");
+  return a[I]; 
 }
 		
 template< size_t I, class T, size_t N >
 constexpr const T& get( const array<T,N>& a )
 {
-  static_assert(I < N, "array: the index I is out of range");
+  static_assert(I < N,"array: the index I is out of range");
   return a[I]; 
+}
+
+//! The for_each specialization for array
+template<class UnaryFunction, class T, size_t N>
+UnaryFunction for_each
+  ( _array_iterator<T, N> first, 
+    _array_iterator<T, N> last, 
+    UnaryFunction f )
+{
+  // TODO check assembly 
+  if (__builtin_expect(first.a_begin != last.a_begin, 0)
+      || __builtin_expect
+           (first.virtual_ptr() < first.a_begin, 0)
+      || __builtin_expect
+           (first.virtual_ptr() > first.a_begin + N, 0)
+      || __builtin_expect
+           (last.virtual_ptr() < last.a_begin, 0)
+      || __builtin_expect
+           (last.virtual_ptr() > last.a_begin + N, 0))
+    return std::move(f);
+  
+
+  for ( auto p = first.virtual_ptr();
+        p < last.virtual_ptr();
+        p++ )
+    f(*p);
+
+  return std::move(f);
 }
 
 }
