@@ -19,7 +19,8 @@ namespace std {
 namespace bits {
 
 //! T is a type to be constructed externally by a placement
-//! new operator
+//! new operator. It will also never call a destructor for
+//! the object.
 template<class T>
 union _externally_constructed
 {

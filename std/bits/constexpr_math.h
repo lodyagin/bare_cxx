@@ -15,13 +15,15 @@
 #ifndef _STD_BITS_CONSTEXPR_MATH_H
 #define _STD_BITS_CONSTEXPR_MATH_H
 
+#include <cstdint>
+
 namespace std {  namespace bits {
 
 // FIXME add overflow
 template<uintmax_t x>
 struct log2x 
 {
-  enum { value = log2x<(x >> 1)>::value + 1 };
+  enum : uintmax_t{ value = log2x<(x >> 1)>::value + 1 };
 };
 
 template<> 
@@ -33,13 +35,13 @@ struct log2x<1>
 template<uint8_t x>
 struct pow2x
 {
-  enum : unsigned long long { value = 2 * pow2x<x - 1>::value };
+  enum : uintmax_t { value = 2 * pow2x<x - 1>::value };
 };
 
 template<>
 struct pow2x<0>
 {
-  enum { value = 1 };
+  enum : uintmax_t { value = 1 };
 };
 
 //! Return mask with n lower bits set

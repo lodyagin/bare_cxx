@@ -5,6 +5,7 @@ set(bare_c++lib_SOURCES
     iostream.cpp
     new.cpp
     start/atexit.cpp
+    start/pure_virtual.cpp
 )
 
 add_library(bare_c++lib ${bare_c++lib_SOURCES})

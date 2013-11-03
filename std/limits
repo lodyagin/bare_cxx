@@ -115,7 +115,7 @@ public:
   static constexpr bool is_specialized = true;
   static constexpr int min()
   {
-    return - pow2x<sizeof(int) * 8 - 1>::value;
+    return - max() - 1;
   }
 
   static constexpr int max()
