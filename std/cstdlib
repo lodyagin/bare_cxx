@@ -14,12 +14,9 @@
 #ifndef _CSTDLIB_HEADER
 #define _CSTDLIB_HEADER
 
-#include <config.bare>
 #include <cstdint>
 
-namespace _STD {
-
-void abort() [[noreturn]] ;
+namespace std {
 
 struct div_t
 {
@@ -39,68 +36,42 @@ struct lldiv_t
   long long rem;
 };
 
+void abort() [[noreturn]];
+
+void exit(int status) [[noreturn]];
+
+inline div_t div(int x, int y)
+{
+  return { x / y, x % y };
+}
+
+inline ldiv_t ldiv(long x, long y)
+{
+  return { x / y, x % y };
+}
+
+inline lldiv_t lldiv(long long x, long long y)
+{
+  return { x / y, x % y };
+}
+
+}
+
+namespace bare {
+
 struct imaxdiv_t
 {
   intmax_t quot;
   intmax_t rem;
 };
 
-inline div_t div(int x, int y)
-{
-  static_assert(sizeof(int) == 4, 
-                "div: sizeof(int) != 4");
-  register int x_ asm ("eax") = x;
-  register int quot asm ("eax");
-  register int rem asm ("edx");
-  asm ("cdq \n\t"
-       "idivl %2" 
-       : "=r" (quot), "=r" (rem)
-       : "rm" (y), "0" (x_));
-  return { quot, rem };
-}
-
-inline ldiv_t ldiv(long x, long y)
-{
-  static_assert(sizeof(long) == 8, 
-              "ldiv: sizeof(long) != 8");
-  register long x_ asm ("rax") = x;
-  register long quot asm ("rax");
-  register long rem asm ("rdx");
-  asm ("cqo \n\t"
-       "idivq %2" 
-       : "=r" (quot), "=r" (rem)
-       : "rm" (y), "0" (x_));
-  return { quot, rem };
-}
-
-inline lldiv_t lldiv(long long x, long long y)
-{
-  static_assert(sizeof(long long) == 8, 
-              "lldiv: sizeof(long long) != 8");
-  register long x_ asm ("rax") = x;
-  register long quot asm ("rax");
-  register long rem asm ("rdx");
-  asm ("cdo \n\t"
-       "idivq %2" 
-       : "=r" (quot), "=r" (rem)
-       : "rm" (y), "0" (x_));
-  return { quot, rem };
-}
-
 inline imaxdiv_t imaxdiv(intmax_t x, intmax_t y)
 {
-  static_assert(sizeof(intmax_t) == 8, 
-              "lldiv: sizeof(long long) != 8");
-  register long x_ asm ("rax") = x;
-  register long quot asm ("rax");
-  register long rem asm ("rdx");
-  asm ("cdo \n\t"
-       "idivq %2" 
-       : "=r" (quot), "=r" (rem)
-       : "rm" (y), "0" (x_));
-  return { quot, rem };
+  return { x / y, x % y };
 }
 
 }
+
+
 
 #endif
