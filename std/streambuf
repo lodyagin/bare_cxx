@@ -15,10 +15,9 @@
 #ifndef _STREAMBUF_HEADER_
 #define _STREAMBUF_HEADER_
 
-#include <config.bare>
 #include <string>
 
-namespace _STD {
+namespace std {
 
 /**
   * It is not close to the standard yet.
@@ -48,7 +47,7 @@ public:
 
   //! A version with a non-standard argument, we use a safe
   //! size-limted string instead of const char* + count.
-  streamsize sputn(constexpr_basic_string<char_type> s)
+  streamsize sputn(bare::constexpr_basic_string<char_type> s)
   {
     xsputn(s.data(), s.size());
     return s.size();

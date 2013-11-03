@@ -15,11 +15,19 @@
 #ifndef _ALGORITHM_HEADER_
 #define _ALGORITHM_HEADER_
 
-#include <config.bare>
 #include <utility>
 #include <iterator>
 
-namespace _STD {
+namespace std {
+
+template<class ForwardIt, class T>
+void fill(ForwardIt first, ForwardIt last, const T& value)
+{
+  // TODO cache optimization
+  // TODO the case of a zero-fill of a continuous storage
+  for (; first != last; ++first)
+    *first = value;
+}
 
 template< class InputIt, class UnaryFunction >
 UnaryFunction for_each

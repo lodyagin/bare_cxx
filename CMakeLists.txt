@@ -16,6 +16,13 @@ include_directories(include)
 #include_directories(${BARE_METAL_OS_SOURCE_DIR}/programs)
 link_directories(${CMAKE_SOURCE_DIR}/lib)
 
-add_executable(hellocpp hellocpp.cpp)
+set(crt_SOURCES
+    ${CMAKE_SOURCE_DIR}/lib/start/crt0.cpp
+)
+
+add_executable(hellocpp ${crt_SOURCES}
+  hellocpp.cpp
+)
+
 target_link_libraries(hellocpp bare_c++lib)
 

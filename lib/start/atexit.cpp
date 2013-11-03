@@ -82,9 +82,6 @@ protected:
   typename atex_type::size_type next; // = 0;
 };
 
-// it should countain the uniq value per dl module
-void *__dso_handle = &_atexit_array;
-
 namespace {
 
 typedef _atexit_array_t<64> _atexit_array_type;
@@ -103,6 +100,9 @@ inline void _atexit_array_init()
 }
 
 }
+
+// it should countain the unique value per dl module
+void *__dso_handle = &_atexit_array;
 
 extern "C" int __cxa_atexit
   ( void (*destructor) (void*), 

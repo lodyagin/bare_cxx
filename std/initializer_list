@@ -21,7 +21,7 @@
 namespace std {
 
 template<class T>
-initializer_list : protected bare::dynarray
+class initializer_list //: protected bare::dynarray
 {
 public:
   typedef T value_type;
@@ -35,8 +35,8 @@ public:
 
   constexpr size_type size() const;
 
-  constexpr const_iterator begin() const;
-  constexpr const_iterator end() const;
+  //constexpr const_iterator begin() const;
+  //constexpr const_iterator end() const;
 private:
   // GCC will implicitly call this constructor
   initializer_list(const T* ptr, size_t n) noexcept;

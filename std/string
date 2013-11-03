@@ -15,12 +15,11 @@
 #ifndef _STRING_HEADER_
 #define _STRING_HEADER_
 
-#include <config.bare>
 #include <cstdint>
 #include <cstddef>
 #include <bits/streamtypes.h>
 
-namespace _STD {
+namespace std {
 
 template<class CharT>
 class char_traits {};
@@ -171,6 +170,8 @@ public:
 };
 #endif
 
+namespace bits {
+
 template <
   class CharT,
   class Traits = std::char_traits<CharT> //,
@@ -198,6 +199,8 @@ public:
   //TODO add more constructors
 };
 
+}
+
 /**
  * The std::string implementation.
  * It is far from the standard yet.
@@ -211,7 +214,7 @@ template <
 //  , uint32_t max_size_limit = 
 > 
 class basic_string 
-  : public _basic_string_impl<CharT, Traits>
+  : public bits::_basic_string_impl<CharT, Traits>
 {
 };
 
@@ -235,20 +238,20 @@ template <
   class Traits = std::char_traits<CharT>
 > 
 class constexpr_basic_string 
-  : public _basic_string_impl
+  : public std::bits::_basic_string_impl
       <CharT, Traits /*, std:pre_allocated*/ >
 {
 };
 
 template <class Traits>
 class constexpr_basic_string<char, Traits>
-  : public _basic_string_impl<char, Traits>
+  : public std::bits::_basic_string_impl<char, Traits>
 {
 public:
-  typedef typename _basic_string_impl<char, Traits>
+  typedef typename std::bits::_basic_string_impl<char, Traits>
     ::size_type size_type;
 
-  template<uint32_t N>
+  template<std::uint32_t N>
   constexpr_basic_string(const char(&str)[N])
     : len(N-1), arr(str)
   {

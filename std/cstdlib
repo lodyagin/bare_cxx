@@ -16,6 +16,9 @@
 
 #include <cstdint>
 
+#define EXIT_SUCCESS (0)
+#define EXIT_FAILURE (1)
+
 namespace std {
 
 struct div_t
@@ -36,9 +39,11 @@ struct lldiv_t
   long long rem;
 };
 
-void abort() [[noreturn]];
+void abort() noexcept [[noreturn]];
 
-void exit(int status) [[noreturn]];
+void exit(int exit_code) [[noreturn]];
+
+void _Exit(int exit_code) noexcept [[noreturn]];
 
 inline div_t div(int x, int y)
 {

@@ -105,7 +105,7 @@ template<class Traits>
 basic_ostream<char, Traits>& 
   operator << 
     (basic_ostream<char,Traits>& os, 
-     constexpr_basic_string<char> str)
+     bare::constexpr_basic_string<char> str)
 {
   // TODO padding
   typename basic_ostream<char,Traits>::sentry sentry(os);

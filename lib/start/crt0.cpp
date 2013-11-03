@@ -14,6 +14,9 @@
 
 #include <algorithm>
 #include <string>
+#include <initializer_list>
+#include <cstdlib>
+#include <csetjmp>
 
 inline unsigned long b_system_config_crt0
   (unsigned long function, unsigned long var)
@@ -27,7 +30,7 @@ inline unsigned long b_system_config_crt0
 }
 
 extern int main
-  (std::initializer_list<bare::constexpr_string>);
+  (/*std::initializer_list<bare::constexpr_string>*/);
 
 namespace {
 
@@ -39,8 +42,22 @@ inline void zero_bss()
 
 }
 
+// set by std::exit(int) family
+int _exit_code;
+
+std::jmp_buf _exit_jump_buf;
+
 extern "C" int _start()
 {
+  extern "C" void _init(); 
+
   zero_bss();
+  _init();
+
+  if (setjmp(_exit_jump_buf))
+    return _exit_code; // longjmp was made
+  else 
+    // FIXME change to std::exit
+    std:_Exit(main()); // noreturn, will allways long jump
 }
 
