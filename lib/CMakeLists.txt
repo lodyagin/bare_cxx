@@ -3,6 +3,7 @@ include_directories(${BARE_METAL_OS_SOURCE_DIR}/programs)
 
 set(bare_c++lib_SOURCES
     iostream.cpp
+    new.cpp
     start/atexit.cpp
 )
 

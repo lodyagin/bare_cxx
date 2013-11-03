@@ -1,4 +1,4 @@
-// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+// -*-coding: mule-utf-8-unix; fill-column: 58 -*-
 /** 
  * @file
  *
@@ -22,7 +22,7 @@ namespace bare {
 
 inline void b_output_chars(const char *str, unsigned long nbr)
 {
-	asm volatile ("call *0x00100018" : : "S"(str), "c"(nbr));
+  asm volatile ("call *0x00100018" : : "S"(str), "c"(nbr));
 }
 
 }
