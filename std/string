@@ -215,6 +215,13 @@ class basic_string
 {
 };
 
+typedef basic_string<char> string;
+typedef basic_string<wchar_t> wstring;
+
+}
+
+namespace bare {
+
 /**
  * Just constexpr_basic_string. It is not defined in the
  * C++ standarg but is used in bare_c++lib for "wrap"
@@ -255,9 +262,6 @@ private:
   const size_type len;
   const char* const arr;
 };
-
-typedef basic_string<char> string;
-typedef basic_string<wchar_t> wstring;
 
 typedef constexpr_basic_string<char> constexpr_string;
 typedef constexpr_basic_string<wchar_t> constexpr_wstring;

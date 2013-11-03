@@ -66,7 +66,12 @@ _externally_constructed<basic_ostream<char>> clog;
 
 // Chec the compiler inserts a thread guard.
 // Answer http://stackoverflow.com/questions/10521263/standard-way-to-implement-initializer-like-ios-baseinit
-static unsigned int nifty_counter;
+
+namespace {
+
+unsigned int nifty_counter;
+
+}
 
 ios_base::Init::Init()
 {

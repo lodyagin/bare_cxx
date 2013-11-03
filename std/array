@@ -26,8 +26,6 @@ namespace _STD {
 template<class T, _STD::size_t N>
 class array;
 
-namespace {
-
 /**
  * The std::array iterator implementation.
  * It is "cycled", iterator++ at the last cell jumps to
@@ -254,8 +252,6 @@ inline _array_iterator<T,N> operator -
      noexcept
 {
   return i - n;
-}
-
 }
 
 /**

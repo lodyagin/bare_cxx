@@ -82,14 +82,16 @@ protected:
   typename atex_type::size_type next; // = 0;
 };
 
-typedef _atexit_array_t<64> _atexit_array_type;
-static _externally_constructed<_atexit_array_type> 
-  _atexit_array; 
-
 // it should countain the uniq value per dl module
 void *__dso_handle = &_atexit_array;
 
-inline static void _atexit_array_init()
+namespace {
+
+typedef _atexit_array_t<64> _atexit_array_type;
+_externally_constructed<_atexit_array_type> 
+  _atexit_array; 
+
+inline void _atexit_array_init()
 {
   // is thread-protected by compiler (compare to out-of
   // function scope)?
@@ -98,6 +100,8 @@ inline static void _atexit_array_init()
     new(&_atexit_array.m) _atexit_array_type();
     inited = true;
   }
+}
+
 }
 
 extern "C" int __cxa_atexit
