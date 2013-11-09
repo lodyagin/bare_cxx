@@ -36,6 +36,7 @@ public:
   using reverse_it = reverse_iterator
     <typename atex_type::iterator>;
 
+  // TODO std::atexit must be reenterant
   int reg
     ( void (*destructor) (void*), 
       void *arg,
@@ -88,6 +89,7 @@ typedef _atexit_array_t<64> _atexit_array_type;
 _externally_constructed<_atexit_array_type> 
   _atexit_array; 
 
+// TODO std::atexit must be reenterant
 inline void _atexit_array_init()
 {
   // is thread-protected by compiler (compare to out-of
