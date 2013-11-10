@@ -14,14 +14,16 @@
 #include <cstdlib>
 #include <csetjmp>
 
-void abort() [[noreturn]]
+namespace std {
+
+[[noreturn]] void abort()
 {
   _Exit(EXIT_FAILURE);
 }
 
-void exit(int exit_code) [[noreturn]];
+[[noreturn]] void exit(int exit_code);
 
-void _Exit(int exit_code) [[noreturn]]
+[[noreturn]] void _Exit(int exit_code)
 {
   using namespace std;
   extern jmp_buf _exit_jump_buf;
@@ -29,6 +31,8 @@ void _Exit(int exit_code) [[noreturn]]
 
   _exit_code = exit_code;
   longjmp(_exit_jump_buf, 1);
+}
+
 }
 
 

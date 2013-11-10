@@ -39,11 +39,11 @@ struct lldiv_t
   long long rem;
 };
 
-void abort() noexcept [[noreturn]];
+[[noreturn]] void abort() noexcept;
 
-void exit(int exit_code) [[noreturn]];
+[[noreturn]] void exit(int exit_code);
 
-void _Exit(int exit_code) noexcept [[noreturn]];
+[[noreturn]] void _Exit(int exit_code) noexcept;
 
 inline div_t div(int x, int y)
 {
@@ -61,22 +61,5 @@ inline lldiv_t lldiv(long long x, long long y)
 }
 
 }
-
-namespace bare {
-
-struct imaxdiv_t
-{
-  intmax_t quot;
-  intmax_t rem;
-};
-
-inline imaxdiv_t imaxdiv(intmax_t x, intmax_t y)
-{
-  return { x / y, x % y };
-}
-
-}
-
-
 
 #endif

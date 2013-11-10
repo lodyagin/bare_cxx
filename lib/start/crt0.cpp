@@ -47,10 +47,10 @@ int _exit_code;
 
 std::jmp_buf _exit_jump_buf;
 
+extern "C" void _init(); 
+
 extern "C" int _start()
 {
-  extern "C" void _init(); 
-
   zero_bss();
   _init();
 
@@ -58,6 +58,6 @@ extern "C" int _start()
     return _exit_code; // longjmp was made
   else 
     // FIXME change to std::exit
-    std:_Exit(main()); // noreturn, will allways long jump
+    std::_Exit(main()); // noreturn, will allways long jump
 }
 

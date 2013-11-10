@@ -14,9 +14,7 @@
 #ifndef _CSTDINT_HEADER
 #define _CSTDINT_HEADER
 
-#include <config.bare>
-
-namespace _STD {
+namespace std {
 
 typedef signed char int8_t;
 typedef unsigned char uint8_t;

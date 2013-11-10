@@ -15,9 +15,10 @@
 //========================================================
 // int setjmp(jmp_buf)
 //
-        
-.globl setjmp
-setjmp:
+
+// std::bits::_setjmp 
+.globl _ZNSt4bits7_setjmpEPm  
+_ZNSt4bits7_setjmpEPm:
         movq   %rsp, (%rdi)
         movq   %rbp, 8(%rdi)
         movq   %rbx, 16(%rdi)
@@ -37,8 +38,9 @@ setjmp:
 // int longjmp(jmp_buf, int status)
 //
 
-.globl longjmp
-longjmp:
+// std::longjmp        
+.globl _ZSt7longjmpPmi
+_ZSt7longjmpPmi:
         movq   (%rdi), %rsp
         movq   8(%rdi), %rbp
         movq   16(%rdi), %rbx

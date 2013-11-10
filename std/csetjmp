@@ -14,19 +14,21 @@
 #ifndef _CSETJMP_HEADER_
 #define _CSETJMP_HEADER_
 
-#include <cstding>
+#include <cstdint>
 
-#define setjmp(buf) std::setjmp(buf)
+#define setjmp(buf) std::bits::_setjmp(buf)
 
 namespace std {
 
 // The standard says it is an array type
-typedef uint64_t[8] jmp_buf;
+typedef uint64_t jmp_buf[8];
 
+namespace bits {
+int _setjmp(jmp_buf buf);
+}
 
-int setjmp(jmp_buf buf);
-
-void longjmp(jmp_buf buf, int status);
+//! longjmp. [[noreturn]] is not standard but quite logical
+[[noreturn]] void longjmp(jmp_buf buf, int status);
 
 }
 
