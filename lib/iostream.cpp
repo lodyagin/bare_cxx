@@ -12,15 +12,13 @@
  *
  */
 
-#define LINUX_CROSS
-
 #include <new>
 #include <string>
 #include <streambuf>
 #include <ostream>
 #include <bits/ext_constr.h>
 
-#ifdef LINUX_CROSS
+#ifdef LINUX
 
 namespace bare {
 
@@ -32,7 +30,7 @@ inline void b_output_chars
   register const char* buf asm ("rcx") = str;
   register unsigned long n asm ("rdx") = nbr;
   asm ("int $0x80" 
-       : "=r" (file), "=r" (buf), "=r" (n), "=r" (syscall)
+       : : "r" (file), "r" (buf), "r" (n), "r" (syscall)
        );
 }
 
