@@ -1,0 +1,64 @@
+Prerequisites
+-------------
+
+You need those programs
+  * GCC at least 4.8 (the older versions can work but we
+  don't provide an official support for them
+  * cmake at least 2.8 (but you can try older versions)
+
+BareMetal OS
+------------
+
+    cd bare_c++lib
+    rm -f CMakeCache.txt
+    mkdir ../bare.metal
+    cd ../bare.metal
+    cmake ../bare_c++lib
+    make clean
+    make
+
+Only static library is built.
+
+There is an example program hellocpp.cpp, the make creates
+hellocpp binary ready to launch on the BareMetal.
+
+Use the instruction for BareMetal OS installation. Suppose
+you have the standard (recommended) BareMetal OS tree and
+put bare_c++lib in the BareMetal/src folder on the same
+level as a BareMetal OS, BMFS and Pure64 folders. Suppose
+you created your BareMetal OS installation and installed
+qemu.
+
+To try bare c++ lib use following commnads:
+
+    cd BareMetal
+    cp src/bare.metal/hellocpp bin/hellocpp.app
+    pushd bin
+    bmfs bmfs.image delete hellocpp.app
+    bmfs bmfs.image create hellocpp.app 3
+    bmfs bmfs.image write hellocpp.app
+    popd
+    ./run.sh
+
+Now you can start the hellocpp application inside the
+BareMetal OS (just type `hellocpp').
+
+Linux
+-----
+
+    cd bare_c++lib
+    rm -f CMakeCache.txt
+    mkdir ../bare.linux
+    cd ../bare.linux
+    cmake -DLINUX=yes ../bare_c++lib
+    make clean
+    make
+
+Now you can start and debug hellocpp application and the
+library itself under Linux.
+
+The test set
+------------
+
+We use the test set from CLang libcxx library, it resides
+in the test directory. 
