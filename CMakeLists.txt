@@ -10,6 +10,10 @@ cmake_minimum_required(VERSION 2.8)
 # The linux compilation is for debugging & testing
 if(LINUX)
   add_definitions(-DLINUX)
+else()
+  set(CMAKE_EXE_LINKER_FLAGS 
+      "-T ${CMAKE_SOURCE_DIR}/lib/start/app.ld ${CMAKE_EXE_LINKER_FLAGS}"
+  )
 endif()
 
 set(CMAKE_CXX_FLAGS 
