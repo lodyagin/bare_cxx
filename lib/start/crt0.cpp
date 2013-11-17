@@ -18,16 +18,11 @@
 #include <cstdlib>
 #include <csetjmp>
 
+// Make sure _start is the first defined function in this
+// file! (it must start the .text segment)
+
 inline unsigned long b_system_config_crt0
-  (unsigned long function, unsigned long var)
-{
-  unsigned long tlong;
-  asm volatile 
-    ("call *0x001000B0" 
-     : "=a"(tlong) 
-     : "d"(function), "a"(var));
-  return tlong;
-}
+  (unsigned long function, unsigned long var);
 
 int main(/*std::initializer_list<bare::constexpr_string>*/);
 
@@ -40,10 +35,8 @@ extern "C" ctor_t __init_array_end[];
 
 namespace {
 
-inline void zero_bss()
-{
-  std::fill(&__bss_start, &_end, 0);
-}
+inline void zero_bss();
+inline void call_ctor(ctor_t ctor);
 
 }
 
@@ -71,10 +64,9 @@ extern "C" void _start()
   _init();
 
   for_each(__init_array_start, __init_array_end,
-           [](ctor_t ctor) 
-           {
-              (*ctor)(); 
-           });
+           // unable to use lambda here (.text segment
+           // order!) 
+           call_ctor);
 
   if (!setjmp(_exit_jump_buf))
     // FIXME change to std::exit
@@ -90,3 +82,27 @@ extern "C" void _start()
 #endif
 }
 
+inline unsigned long b_system_config_crt0
+  (unsigned long function, unsigned long var)
+{
+  unsigned long tlong;
+  asm volatile 
+    ("call *0x001000B0" 
+     : "=a"(tlong) 
+     : "d"(function), "a"(var));
+  return tlong;
+}
+
+namespace {
+
+inline void zero_bss()
+{
+  std::fill(&__bss_start, &_end, 0);
+}
+
+inline void call_ctor(ctor_t ctor)
+{
+  (*ctor)(); 
+}
+
+}
