@@ -12,8 +12,6 @@
  *
  */
 
-#define LINUX_CROSS
-
 #include <algorithm>
 #include <string>
 #include <initializer_list>
@@ -61,7 +59,7 @@ jmp_buf _exit_jump_buf;
 extern "C" void _init(); 
 extern "C" void _fini(); 
 
-#ifndef LINUX_CROSS
+#ifndef LINUX
 extern "C" int _start()
 #else
 extern "C" void _start()
@@ -83,7 +81,7 @@ extern "C" void _start()
     std::_Exit(main()); // noreturn, will allways long jump
 
   _fini();
-#ifndef LINUX_CROSS
+#ifndef LINUX
   return _exit_code; // longjmp was made
 #else
   asm ("mov $1, %rax\n\t"
