@@ -40,14 +40,14 @@ inline void call_ctor(ctor_t ctor);
 
 }
 
-namespace std {
+namespace std { namespace bits {
 
 // set by std::exit(int) family
 int _exit_code;
 
 jmp_buf _exit_jump_buf;
 
-}
+}}
 
 extern "C" void _init(); 
 extern "C" void _fini(); 
@@ -59,6 +59,7 @@ extern "C" void _start()
 #endif
 {
   using namespace std;
+  using namespace std::bits;
 
   zero_bss();
   _init();
@@ -74,7 +75,7 @@ extern "C" void _start()
 
   _fini();
 #ifndef LINUX
-  return _exit_code; // longjmp was made
+  return std::bits::_exit_code; // longjmp was made
 #else
   asm ("mov $1, %rax\n\t"
        "xor %ebx, %ebx\n\t"

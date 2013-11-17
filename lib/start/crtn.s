@@ -11,29 +11,14 @@
  *
  */
 
-#include <cstdlib>
-#include <csetjmp>
+.section .init
 
-namespace std {
+        popq %rbp
+        ret
 
-namespace bits {
-  extern jmp_buf _exit_jump_buf;
-  extern int _exit_code;
-}
+.section .fini
 
-[[noreturn]] void abort()
-{
-  _Exit(EXIT_FAILURE);
-}
-
-[[noreturn]] void exit(int exit_code);
-
-[[noreturn]] void _Exit(int exit_code)
-{
-  bits::_exit_code = exit_code;
-  longjmp(bits::_exit_jump_buf, 1);
-}
-
-}
-
+        popq %rbp
+        ret
+        
 
