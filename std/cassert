@@ -15,18 +15,23 @@
 #ifndef _CASSERT_HEADER
 #define _CASSERT_HEADER
 
-#include <config.bare>
 #include <iostream>
+#include <cstdlib>
 
-#ifndef NDEBUG
+#ifdef NDEBUG
 #define assert(cond) ((void)0)
 #else
 #define assert(cond) \
   do { \
-    std::cerr << __FILE__ << ':' << __LINE__ << ':' \
-              << __FUNCTION << ":Assertion `" << #cond \
-              << "' failed.\nAborted"; \
-    abort(); \
+    if (!(cond)) { \
+      std::cerr << '\n' << __FILE__ << ':' \
+                /*<< __LINE__ << ':'*/ \
+                << __FUNCTION__ \
+                << ": Assertion `" << #cond \
+                << "' failed.\nAborted.\n"; \
+      abort(); \
+    } \
   } while(0)
+#endif
 
 #endif
