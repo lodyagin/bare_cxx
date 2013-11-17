@@ -72,10 +72,11 @@ extern "C" void _start()
   zero_bss();
   _init();
 
-  for ( ctor_t* p = __init_array_start;
-        p != __init_array_end;
-        p++ )
-    (*p)();
+  for_each(__init_array_start, __init_array_end,
+           [](ctor_t ctor) 
+           {
+              (*ctor)(); 
+           });
 
   if (!setjmp(_exit_jump_buf))
     // FIXME change to std::exit
