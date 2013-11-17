@@ -9,11 +9,11 @@ You need those programs
 BareMetal OS
 ------------
 
-    cd bare_c++lib
+    cd bare_cxx
     rm -f CMakeCache.txt
     mkdir ../bare.metal
     cd ../bare.metal
-    cmake ../bare_c++lib
+    cmake ../bare_cxx
     make clean
     make
 
@@ -24,7 +24,7 @@ hellocpp binary ready to launch on the BareMetal.
 
 Use the instruction for BareMetal OS installation. Suppose
 you have the standard (recommended) BareMetal OS tree and
-put bare_c++lib in the BareMetal/src folder on the same
+put bare_cxx in the BareMetal/src folder on the same
 level as a BareMetal OS, BMFS and Pure64 folders. Suppose
 you created your BareMetal OS installation and installed
 qemu.
@@ -46,11 +46,11 @@ BareMetal OS (just type `hellocpp').
 Linux
 -----
 
-    cd bare_c++lib
+    cd bare_cxx
     rm -f CMakeCache.txt
     mkdir ../bare.linux
     cd ../bare.linux
-    cmake -DLINUX=yes ../bare_c++lib
+    cmake -DLINUX=yes ../bare_cxx
     make clean
     make
 
