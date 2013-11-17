@@ -12,8 +12,12 @@
  *
  */
 
+#include <iostream>
+#include <cstdlib>
 
 extern "C" void __cxa_pure_virtual()
 {
-  // TODO report the error and exit
+  std::cerr << 
+    "<bare_c++lib>: a pure virtual function called.\n";
+  std::abort();
 }
