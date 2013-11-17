@@ -12,6 +12,8 @@
  *
  */
 
+#define LINUX_CROSS
+
 #include <algorithm>
 #include <string>
 #include <initializer_list>
@@ -29,35 +31,63 @@ inline unsigned long b_system_config_crt0
   return tlong;
 }
 
-extern int main
-  (/*std::initializer_list<bare::constexpr_string>*/);
+int main(/*std::initializer_list<bare::constexpr_string>*/);
+
+extern char __bss_start, _end;
+
+typedef void (*ctor_t)();
+
+extern "C" ctor_t __init_array_start[];
+extern "C" ctor_t __init_array_end[];
 
 namespace {
 
 inline void zero_bss()
 {
-  extern char __bss_start, _end;
   std::fill(&__bss_start, &_end, 0);
 }
 
 }
 
+namespace std {
+
 // set by std::exit(int) family
 int _exit_code;
 
-std::jmp_buf _exit_jump_buf;
+jmp_buf _exit_jump_buf;
+
+}
 
 extern "C" void _init(); 
+extern "C" void _fini(); 
 
+#ifndef LINUX_CROSS
 extern "C" int _start()
+#else
+extern "C" void _start()
+#endif
 {
+  using namespace std;
+
   zero_bss();
   _init();
 
-  if (setjmp(_exit_jump_buf))
-    return _exit_code; // longjmp was made
-  else 
+  for ( ctor_t* p = __init_array_start;
+        p != __init_array_end;
+        p++ )
+    (*p)();
+
+  if (!setjmp(_exit_jump_buf))
     // FIXME change to std::exit
     std::_Exit(main()); // noreturn, will allways long jump
+
+  _fini();
+#ifndef LINUX_CROSS
+  return _exit_code; // longjmp was made
+#else
+  asm ("mov $1, %rax\n\t"
+       "xor %ebx, %ebx\n\t"
+       "int $0x80");
+#endif
 }
 

@@ -46,7 +46,11 @@ protected:
   ios_base() {}
 }; 
 
-static class ios_base::Init _std_streams_initializer;
+namespace {
+
+ios_base::Init _std_streams_initializer;
+
+}
 
 template <
   class CharT,

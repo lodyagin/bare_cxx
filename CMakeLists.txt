@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 2.8)
 #>)
 
 set(CMAKE_CXX_FLAGS 
-  "-O2 -std=c++11 -m64 -Wall -nostdinc -nostdinc++ -nostdlib -fno-rtti -fno-exceptions")
+  "-g -O0 -std=c++11 -m64 -Wall -nostdinc -nostdinc++ -nostdlib -fno-rtti -fno-exceptions")
 
 add_subdirectory(lib)
 
@@ -16,12 +16,31 @@ include_directories(include)
 #include_directories(${BARE_METAL_OS_SOURCE_DIR}/programs)
 link_directories(${CMAKE_SOURCE_DIR}/lib)
 
-set(crt_SOURCES
+set(CRT0
     ${CMAKE_SOURCE_DIR}/lib/start/crt0.cpp
 )
 
-add_executable(hellocpp ${crt_SOURCES}
+exec_program(
+  ${CMAKE_CXX_COMPILER} ARGS -print-file-name=crti.o
+  OUTPUT_VARIABLE CRTI
+)
+exec_program(
+  ${CMAKE_CXX_COMPILER} ARGS -print-file-name=crtbegin.o
+  OUTPUT_VARIABLE CRTBEGIN
+)
+exec_program(
+  ${CMAKE_CXX_COMPILER} ARGS -print-file-name=crtend.o
+  OUTPUT_VARIABLE CRTEND
+)
+exec_program(
+  ${CMAKE_CXX_COMPILER} ARGS -print-file-name=crtn.o
+  OUTPUT_VARIABLE CRTN
+)
+  
+add_executable(hellocpp 
+  ${CRT0} ${CRTI} ${CRTBEGIN}
   hellocpp.cpp
+  ${CRTEND} ${CRTN}
 )
 
 target_link_libraries(hellocpp bare_c++lib)

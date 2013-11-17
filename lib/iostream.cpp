@@ -12,20 +12,45 @@
  *
  */
 
+#define LINUX_CROSS
+
 #include <new>
 #include <string>
 #include <streambuf>
 #include <ostream>
 #include <bits/ext_constr.h>
 
+#ifdef LINUX_CROSS
+
 namespace bare {
 
-inline void b_output_chars(const char *str, unsigned long nbr)
+inline void b_output_chars
+  (const char *str, unsigned long nbr)
+{
+  register int syscall asm ("rax") = 4; //sys_write
+  register int file asm ("rbx") = 1; // stdout
+  register const char* buf asm ("rcx") = str;
+  register unsigned long n asm ("rdx") = nbr;
+  asm ("int $0x80" 
+       : "=r" (file), "=r" (buf), "=r" (n), "=r" (syscall)
+       );
+}
+
+}
+
+#else
+
+namespace bare {
+
+inline void b_output_chars
+  (const char *str, unsigned long nbr)
 {
   asm volatile ("call *0x00100018" : : "S"(str), "c"(nbr));
 }
 
 }
+
+#endif
 
 namespace std {
 

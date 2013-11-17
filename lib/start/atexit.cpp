@@ -104,7 +104,7 @@ inline void _atexit_array_init()
 }
 
 // it should countain the unique value per dl module
-void *__dso_handle = &_atexit_array;
+extern void *__dso_handle;
 
 extern "C" int __cxa_atexit
   ( void (*destructor) (void*), 
