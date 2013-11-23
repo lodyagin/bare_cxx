@@ -327,9 +327,17 @@ public:
     return arr[N-1];
   }
 
-  // Disaled for safety. Try use C++
-  // T* data();
-  // const T* data() const;
+#ifdef _UNSAFE_CXX
+  T* data()
+  {
+	 return &front();
+  }
+
+  const T* data() const
+  {
+	 return &front();
+  }
+#endif
 
   constexpr bool empty() const
   {
