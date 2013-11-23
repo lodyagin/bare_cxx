@@ -77,9 +77,11 @@ extern "C" void _start()
 #ifndef LINUX
   return std::bits::_exit_code; // longjmp was made
 #else
-  asm ("mov $1, %rax\n\t"
-       "xor %ebx, %ebx\n\t"
-       "int $0x80");
+  asm ("mov $1, %%rax\n\t"
+		 "mov %0, %%rbx\n\t"
+       "int $0x80"
+		 : : "m" (std::bits::_exit_code)
+	 );
 #endif
 }
 
