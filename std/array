@@ -341,7 +341,7 @@ public:
 
   constexpr bool empty() const
   {
-    return N != 0;
+    return N == 0;
   }
 
   constexpr size_type size() const
