@@ -25,6 +25,9 @@ constexpr remove_reference_t<T>&& move(T&& t)
   return static_cast<remove_reference_t<T>&&>(t); 
 }
 
+template<class T>
+typename add_rvalue_reference<T>::type declval();
+
 }
 
 #endif

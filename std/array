@@ -364,7 +364,7 @@ public:
   {
     // TODO use cache optimization here
     for (size_type i = 0; i < N; i++)
-      swap(arr[i], other.arr[i]);
+      std::swap(arr[i], other.arr[i]);
   }
 
   // The array container implementation

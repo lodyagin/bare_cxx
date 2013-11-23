@@ -17,6 +17,8 @@
 
 #include <utility>
 #include <iterator>
+#include <type_traits>
+#include <bits/meta.h>
 
 namespace std {
 
@@ -39,14 +41,23 @@ UnaryFunction for_each
   return std::move(f);
 }
 
+// Swap version for scalars
 // FIXME move semantic, noexcept specification
 template<class T>
-void swap(T& a, T& b) noexcept
+auto swap(T& a, T& b) noexcept
+  -> bits::EnableFunIf<std::is_scalar<T>::value, void>
 {
   //TODO check the compilation result (assembler)
   T temp = a;
   a = b;
   b = temp;
+}
+
+template<class T>
+auto swap(T& a, T& b) noexcept
+  -> decltype(a.swap(b), void())
+{
+  a.swap(b);
 }
 
 /* Disabled for safety. Use std::array::swap

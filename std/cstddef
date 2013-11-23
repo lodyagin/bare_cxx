@@ -14,10 +14,11 @@
 #ifndef _CSTDDEF_HEADER
 #define _CSTDDEF_HEADER
 
-#include <config.bare>
 #include <cstdint>
 
-namespace _STD {
+namespace std {
+
+typedef decltype(nullptr) nullptr_t;
 
 //! Unsigned integer type returned by the sizeof operator.
 typedef uint64_t size_t;
