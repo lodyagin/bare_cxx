@@ -29,7 +29,7 @@
                 << __FUNCTION__ \
                 << ": Assertion `" << #cond \
                 << "' failed.\nAborted.\n"; \
-      abort(); \
+		std::abort();								  \
     } \
   } while(0)
 #endif
