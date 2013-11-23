@@ -49,6 +49,7 @@ add_executable(hellocpp
 )
 
 add_subdirectory(lib)
+add_subdirectory(tests)
 
 include_directories(include)
 #include_directories(${BARE_METAL_OS_SOURCE_DIR}/programs)

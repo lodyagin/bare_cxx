@@ -14,7 +14,7 @@ if(PYTHONINTERP_FOUND)
   if(LIBCXX_BUILT_STANDALONE)
     set(LIT_EXECUTABLE "" CACHE FILEPATH "Path to LLVM's lit.py.")
   else()
-    set(LIT_EXECUTABLE "${CMAKE_SOURCE_DIR}/utils/lit/lit.py")
+    set(LIT_EXECUTABLE "${CMAKE_SOURCE_DIR}/tests/utils/lit/lit.py")
   endif()
 
   set(LIT_ARGS_DEFAULT "-sv")
