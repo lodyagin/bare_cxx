@@ -536,6 +536,15 @@ UnaryFunction for_each
   return std::move(f);
 }
 
+template<size_t I, typename T>
+struct tuple_element;
+ 
+template<size_t I, typename T, size_t N>
+struct tuple_element<I, array<T,N> >
+{
+  using type = T;
+};
+
 }
 
 #endif
