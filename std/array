@@ -545,6 +545,14 @@ struct tuple_element<I, array<T,N> >
   using type = T;
 };
 
+template< class T>
+class tuple_size;
+
+template< class T, size_t N >
+class tuple_size< array<T, N> > :
+  public integral_constant<size_t, N>
+{};
+
 }
 
 #endif
