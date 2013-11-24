@@ -15,15 +15,14 @@
 #ifndef _ARRAY_HEADER_
 #define _ARRAY_HEADER_
 
-#include <config.bare>
 #include <iterator>
 #include <cstddef>
 #include <algorithm>
 #include <limits>
 
-namespace _STD {
+namespace std {
 
-template<class T, _STD::size_t N>
+template<class T, std::size_t N>
 class array;
 
 /**
@@ -36,25 +35,20 @@ class array;
  *
  * @author Sergei Lodyagin
  */
-template<class T, _STD::size_t N>
+template<class T, size_t N, class TP, class TR>
 class _array_iterator 
-#if 0
-  : public _STD::iterator <
-  random_access_iterator_tag,
-  T,
-  int32_t // <NB> it is 32-bits values to allow
-  // std::div which is faster than std::ldiv
-  >  
-#endif
 {
   // Access will generate an hw exception
   constexpr static T* not_canonical_address = 
-    2 << sizeof(void*) * 8 - 1;
+    reinterpret_cast<T*>(1 << (sizeof(void*) * 8 - 1));
 
   friend array<T, N>;
 
-  //! the special types to designate the begin and past-the-end
-  //! construction 
+  template<class, size_t, class, class>
+  friend class _array_iterator;
+
+  //! the special types to designate the begin and
+  //! past-the-end construction
   struct begin_t {};
   struct end_t {};
 
@@ -65,8 +59,9 @@ public:
   // std::div which is faster than std::ldiv
   typedef int32_t difference_type;
   typedef uint32_t size_type;
-  typedef T* pointer;
-  typedef T& reference;
+  typedef TP pointer;
+  typedef TR reference;
+  typedef const T* const_pointer;
   typedef const T& const_reference;
   constexpr static size_type array_size = N;
 
@@ -76,33 +71,74 @@ public:
   {
   }
 
-  bool operator == (const _array_iterator b) const noexcept
+  template <
+    class P2, class R2,
+    class = typename enable_if <
+		(is_const<TP>::value || !is_const<P2>::value)
+		&& (is_const<TR>::value || !is_const<R2>::value)
+	 >::type // disable assign const to not-const
+  >
+  _array_iterator(_array_iterator<T,N,P2,R2> o) noexcept
+    : a_begin(o.a_begin),
+		idx(o.idx),
+		carry(o.carry)
+  {
+  }
+
+  template <
+	 class P2, class R2,
+    class = typename enable_if <
+		(is_const<TP>::value || !is_const<P2>::value)
+		&& (is_const<TR>::value || !is_const<R2>::value)
+	 >::type // disable assign const to not-const
+  >
+  _array_iterator& operator = 
+	 (_array_iterator<T,N,P2,R2> o) noexcept
+  {
+	 a_begin = o.a_begin;
+	 idx = o.idx;
+	 carry = o.carry;
+  }
+
+  template<class P2, class R2>
+  bool operator ==
+	 (const _array_iterator<T,N,P2,R2> b) const noexcept
   { 
     return virtual_ptr() == b.virtual_ptr();
   }
   
-  bool operator != (const _array_iterator b) const noexcept
+  template<class P2, class R2>
+  bool operator != 
+	 (const _array_iterator<T,N,P2,R2> b) const noexcept
   {
     return !operator==(b);
   }
 
 
-  bool operator < (const _array_iterator b) const noexcept
+  template<class P2, class R2>
+  bool operator < 
+	 (const _array_iterator<T,N,P2,R2> b) const noexcept
   {
     return *this - b < 0;
   }
 
-  bool operator > (const _array_iterator b) const noexcept
+  template<class P2, class R2>
+  bool operator > 
+	 (const _array_iterator<T,N,P2,R2> b) const noexcept
   {
     return *this - b > 0;
   }
 
-  bool operator <= (const _array_iterator b) const noexcept
+  template<class P2, class R2>
+  bool operator <= 
+	 (const _array_iterator<T,N,P2,R2> b) const noexcept
   {
     return *this - b <= 0;
   }
 
-  bool operator >= (const _array_iterator b) const noexcept
+  template<class P2, class R2>
+  bool operator >= 
+	 (const _array_iterator<T,N,P2,R2> b) const noexcept
   {
     return *this - b >= 0;
   }
@@ -199,7 +235,7 @@ public:
   }
 
 private:
-  _array_iterator(T a_ptr[], size_type the_idx) noexcept 
+  _array_iterator(TP a_ptr, size_type the_idx) noexcept 
     : a_begin(a_ptr),
       carry(0)
   {
@@ -208,7 +244,7 @@ private:
   }
 
   //! construct a begin iterator
-  _array_iterator(T a_ptr[], begin_t) noexcept 
+  _array_iterator(TP a_ptr, begin_t) noexcept 
     : a_begin(a_ptr),
       idx(0),
       carry(0)
@@ -216,7 +252,7 @@ private:
   }
 
   //! construct a past-the-end iterator
-  _array_iterator(T a_ptr[], end_t) noexcept 
+  _array_iterator(TP a_ptr, end_t) noexcept 
     : a_begin(a_ptr),
       idx(0),
       carry(N)
@@ -229,26 +265,30 @@ private:
   }
 
   // TODO cache-line alignment
-  T* a_begin;
+  TP a_begin;
   size_type idx;
   difference_type carry;
 };
 
 // TODO check copy-ellision
-template<class T, _STD::size_t N>
-inline _array_iterator<T,N> operator + 
-  (typename _array_iterator<T,N>::difference_type n, 
-   _array_iterator<T,N> i)
+template <
+  class T, size_t N, class P, class R, class P2, class R2
+>
+inline _array_iterator<T,N,P,R> operator + 
+  (typename _array_iterator<T,N,P2,R2>::difference_type n, 
+   _array_iterator<T,N,P,R> i)
      noexcept
 {
   return i + n;
 }
 
 // TODO check copy-ellision
-template<class T, _STD::size_t N>
-inline _array_iterator<T,N> operator - 
-  (typename _array_iterator<T,N>::difference_type n, 
-   _array_iterator<T,N> i) 
+template <
+  class T, size_t N, class P, class R, class P2, class R2
+>
+inline _array_iterator<T,N,P,R> operator - 
+  (typename _array_iterator<T,N,P2,R2>::difference_type n, 
+   _array_iterator<T,N,P,R> i) 
      noexcept
 {
   return i - n;
@@ -262,7 +302,7 @@ inline _array_iterator<T,N> operator -
  *
  * @author Sergei Lodyagin
  */
-template<class T, _STD::size_t N>
+template<class T, size_t N>
 class array
 {
   static_assert(N >= 0, "array: N is negative");
@@ -272,11 +312,12 @@ public:
 //  static_assert(is_destructible<T>, 
 //               "array::value_type must be Destructible");
 
-  typedef _array_iterator<T, N> iterator;
-  typedef const iterator const_iterator;
+  typedef _array_iterator<T, N, T*, T&> iterator;
+  typedef _array_iterator<T, N, const T*, const T&> 
+	 const_iterator;
   typedef std::reverse_iterator<iterator>
     reverse_iterator;
-  typedef std::reverse_iterator<const iterator>
+  typedef std::reverse_iterator<const_iterator>
     const_reverse_iterator;
   typedef typename iterator::value_type value_type;
   typedef typename iterator::size_type size_type;
@@ -376,12 +417,13 @@ public:
 
   const_iterator begin() const noexcept
   {
-    return iterator(arr, typename iterator::begin_t());
+    return const_iterator
+		(arr, typename const_iterator::begin_t());
   }
 
   const_iterator cbegin() const noexcept
   {
-    return iterator(arr, typename iterator::begin_t());
+    return const_iterator(arr, typename const_iterator::begin_t());
   }
 
   iterator end() noexcept
@@ -391,12 +433,12 @@ public:
 
   const_iterator end() const noexcept
   {
-    return iterator(arr, typename iterator::end_t());
+    return const_iterator(arr, typename const_iterator::end_t());
   }
 
   const_iterator cend() const noexcept
   {
-    return iterator(arr, typename iterator::end_());
+    return const_iterator(arr, typename const_iterator::end_());
   }
 
   reverse_iterator rbegin() noexcept
@@ -406,12 +448,12 @@ public:
 
   const_reverse_iterator rbegin() const noexcept
   {
-    return reverse_iterator(end());
+    return const_reverse_iterator(end());
   }
 
   const_reverse_iterator crbegin() const noexcept
   {
-    return reverse_iterator(end());
+    return const_reverse_iterator(end());
   }
 
   reverse_iterator rend() noexcept
@@ -421,12 +463,12 @@ public:
 
   const_reverse_iterator rend() const noexcept
   {
-    return reverse_iterator(begin());
+    return const_reverse_iterator(begin());
   }
 
   const_reverse_iterator crend() const noexcept
   {
-    return reverse_iterator(begin());
+    return const_reverse_iterator(begin());
   }
 
 };
@@ -509,11 +551,21 @@ constexpr const T& get( const array<T,N>& a )
 }
 
 //! The for_each specialization for array
-template<class UnaryFunction, class T, size_t N>
-UnaryFunction for_each
-  ( _array_iterator<T, N> first, 
-    _array_iterator<T, N> last, 
+template <
+  class InputIt, class UnaryFunction,
+  class T, size_t N
+>
+auto for_each
+  ( InputIt first, 
+    InputIt last, 
     UnaryFunction f )
+  -> bits::EnableFunIf <
+       is_same<InputIt, typename array<T,N>::iterator>
+		   ::value
+		 || is_same
+		      <InputIt, typename array<T,N>::const_iterator>
+		        ::value,
+     UnaryFunction>
 {
   // TODO check assembly 
   if (__builtin_expect(first.a_begin != last.a_begin, 0)
