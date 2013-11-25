@@ -15,11 +15,10 @@
 #ifndef _ITERATOR_HEADER_
 #define _ITERATOR_HEADER_
 
-#include <config.bare>
-//#include <algorithm>
 #include <cstddef>
+#include <ostream>
 
-namespace _STD {
+namespace std {
 
 // iterator categories
 
@@ -41,7 +40,7 @@ struct random_access_iterator_tag
 template <
   class Category,
   class T,
-  class Distance = _STD::ptrdiff_t,
+  class Distance = std::ptrdiff_t,
   class Pointer = T*,
   class Reference = T&
 > 
@@ -63,6 +62,10 @@ struct iterator_traits
   typedef typename Iterator::reference reference;
   typedef typename Iterator::iterator_category iterator_category;
 };
+
+// 24.5 Iterator adaptors
+
+// 24.5.1 Reverse iterators
 
 template<class Iterator>
 class reverse_iterator 
@@ -187,6 +190,11 @@ public:
     return current.operator[](-n-1);
   }
 
+  constexpr bool is_compatible(reverse_iterator b)
+  {
+    return bits::is_compatible(current, b.current);
+  }
+
 protected:
   Iterator current;
 };
@@ -249,6 +257,66 @@ auto operator -
 {
   return rhs.base() - lhs.base();
 }
+
+// 24.6 Stream iterators
+
+// 24.6.4 ostreambuf_iterator
+
+template <class charT, class traits = char_traits<charT> >
+class ostreambuf_iterator :
+  public iterator<output_iterator_tag, void, void, void, void> {
+public:
+  typedef charT char_type;
+  typedef traits traits_type;
+  typedef basic_streambuf<charT,traits> streambuf_type;
+  typedef basic_ostream<charT,traits> ostream_type;
+
+public:
+  ostreambuf_iterator(ostream_type& s) noexcept
+    : sbuf_(s.rdbuf())
+  {
+    //FIXME nullptr
+  }
+
+  ostreambuf_iterator(streambuf_type* s) noexcept
+    : sbuf_(s)
+  {
+    //FIXME nullptr
+  }
+
+  ostreambuf_iterator& operator = (charT c)
+  {
+    if (!failed())
+      failed_ = (sbuf_->sputc(c) == traits::eof());
+
+    return *this;
+  }
+
+  ostreambuf_iterator& operator * ()
+  {
+    return *this;
+  }
+
+  ostreambuf_iterator& operator ++ ()
+  {
+    return *this;
+  }
+  
+  ostreambuf_iterator& operator ++ (int)
+  {
+    return *this;
+  }
+
+  bool failed() const noexcept
+  {
+    return failed_;
+  }
+
+private:
+  streambuf_type* sbuf_;
+  bool failed_ = false;
+};
+
 
 }
 

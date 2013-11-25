@@ -6,6 +6,7 @@ set(bare_c++lib_SOURCES
     cstdlib.cpp
     iostream.cpp
     new.cpp
+    num_put.cpp
     start/atexit.cpp
     start/pure_virtual.cpp
 )

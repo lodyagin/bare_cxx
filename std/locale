@@ -15,6 +15,10 @@
 #ifndef _LOCALE_HEADER_
 #define _LOCALE_HEADER_
 
+#include <cstddef>
+#include <cassert>
+#include <iterator>
+
 namespace std {
 
 class locale
@@ -35,9 +39,20 @@ public:
   };
 };
 
+namespace bits {
+
+template<class T, class CharT, class OutputIt>
+OutputIt num_put
+  ( OutputIt out, 
+    ios_base& str, 
+    CharT fill, 
+    T v );
+
+}
+
 template <
   class CharT,
-  class OutputIt = std::ostreambuf_iterator<CharT>
+  class OutputIt = ostreambuf_iterator<CharT>
 >
 class num_put : public locale::facet
 {};
@@ -47,7 +62,7 @@ class num_put<char> : public locale::facet
 {
 public:
   typedef char char_type;
-  typedef OutputIt iter_type;
+  typedef ostreambuf_iterator<char> iter_type;
   
   explicit num_put(size_t refs = 0)
 	 : locale::facet(refs)
@@ -69,7 +84,10 @@ protected:
 	 ( iter_type out, 
       ios_base& str, 
       char_type fill, 
-      unsigned long long v ) const;
+      unsigned long long v ) const
+  {
+    return bits::num_put(out, str, fill, v);
+  }
 };
 
 }

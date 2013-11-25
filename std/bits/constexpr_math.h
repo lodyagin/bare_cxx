@@ -32,6 +32,17 @@ struct log2x<1>
   enum { value = 0 };
 };
 
+// FIXME add overflow
+// value is number of radix digits in x
+template<unsigned radix, uintmax_t x>
+struct digits
+{
+  enum : uintmax_t{ value = digits<radix, x / radix>::value + 1 };
+};
+
+template<unsigned radix> 
+struct digits<radix, 0> { enum { value = 0}; };
+
 template<uint8_t x>
 struct pow2x
 {
@@ -40,6 +51,18 @@ struct pow2x
 
 template<>
 struct pow2x<0>
+{
+  enum : uintmax_t { value = 1 };
+};
+
+template<uint8_t x>
+struct pow10x
+{
+  enum : uintmax_t { value = 10 * pow10x<x - 1>::value };
+};
+
+template<>
+struct pow10x<0>
 {
   enum : uintmax_t { value = 1 };
 };

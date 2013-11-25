@@ -19,6 +19,7 @@
 #include <cstddef>
 #include <algorithm>
 #include <limits>
+#include <bits/silent_assert.h>
 
 namespace std {
 
@@ -220,6 +221,7 @@ public:
   difference_type operator - (const _array_iterator b) const 
   noexcept
   {
+    //assert(bits::is_compatible(*this, b));
     return virtual_ptr() - b.virtual_ptr();
   }
 
@@ -232,6 +234,11 @@ public:
     const noexcept
   {
     return const_cast<_array_iterator*>(this)->operator[](n);
+  }
+
+  constexpr bool is_compatible(_array_iterator b)
+  {
+    return a_begin == b.a_begin;
   }
 
 private:
@@ -568,7 +575,7 @@ auto for_each
      UnaryFunction>
 {
   // TODO check assembly 
-  if (__builtin_expect(first.a_begin != last.a_begin, 0)
+  if (__builtin_expect(!bits::is_compatible(first, last),0)
       || __builtin_expect
            (first.virtual_ptr() < first.a_begin, 0)
       || __builtin_expect
@@ -577,8 +584,10 @@ auto for_each
            (last.virtual_ptr() < last.a_begin, 0)
       || __builtin_expect
            (last.virtual_ptr() > last.a_begin + N, 0))
+  {
+    _silent_assert(false);
     return std::move(f);
-  
+  }
 
   for ( auto p = first.virtual_ptr();
         p < last.virtual_ptr();

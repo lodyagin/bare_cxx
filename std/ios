@@ -15,14 +15,14 @@
 #ifndef _IOS_HEADER_
 #define _IOS_HEADER_
 
-#include <config.bare>
 #include <cwchar>
 #include <cstdint>
 #include <streambuf>
 #include <string>
+#include <algorithm>
 #include <bits/streamtypes.h>
 
-namespace _STD {
+namespace std {
 
 template <class CharT, class Traits> 
 class basic_ostream;
@@ -30,10 +30,47 @@ class basic_ostream;
 class ios_base
 {
 public:
+  typedef uint16_t fmtflags;
+  
+  // 2 bits
+  static constexpr fmtflags dec = 0x00;
+  static constexpr fmtflags oct = 0x01;
+  static constexpr fmtflags hex = 0x02;
+  static constexpr fmtflags basefield = 0x03;
+		
+  // 2 bits
+  static constexpr fmtflags left = 0;
+  static constexpr fmtflags right = 1 << 2;
+  static constexpr fmtflags internal = 2 << 2;
+  static constexpr fmtflags adjustfield = 3 << 2;
+		
+  // 1 bit
+  static constexpr fmtflags scientific = 0;
+  static constexpr fmtflags fixed = 1 << 4;
+  static constexpr fmtflags floatfield = 1 << 4;
+		
+  static constexpr fmtflags boolalpha = 1 << 5;
+  static constexpr fmtflags showbase = 1 << 6;
+  static constexpr fmtflags showpoint = 1 << 7;
+  static constexpr fmtflags showpos = 1 << 8;
+  static constexpr fmtflags skipws = 1 << 9;
+  static constexpr fmtflags unitbuf = 1 << 10;
+  static constexpr fmtflags uppercase = 1 << 11;
+
   ios_base(const ios_base&) = delete;
 
-  // FIXME virtual
-  ~ios_base() {}
+  virtual ~ios_base() {}
+
+  fmtflags flags() const
+  {
+    return flags_;
+  }
+
+  fmtflags flags(fmtflags f)
+  {
+    swap(f, flags_);
+    return f;
+  }
 
   class Init
   {
@@ -44,6 +81,9 @@ public:
 
 protected:
   ios_base() {}
+
+private:
+  fmtflags flags_ = 0;
 }; 
 
 namespace {
@@ -100,9 +140,8 @@ public:
   basic_ostream<CharT,Traits>* tie
     (std::basic_ostream<CharT,Traits>* strm)
   {
-    auto old_tied = tied;
-    tied = strm;
-    return old_tied;
+    swap(tied, strm);
+    return strm;
   }
   
 		

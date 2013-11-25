@@ -16,27 +16,51 @@
 #define _ALGORITHM_HEADER_
 
 #include <utility>
-#include <iterator>
 #include <type_traits>
+#include <cstdlib>
 #include <bits/meta.h>
+#include <bits/iterator.h>
+#include <bits/silent_assert.h>
 
 namespace std {
+
+template< class InputIt, class OutputIt >
+OutputIt copy( InputIt first, InputIt last, OutputIt d_first )
+{
+  if (__builtin_expect(bits::is_compatible(first, last), 1)) {
+    // TODO cache optimization
+    while (first != last)
+      *d_first++ = *first++;
+  }
+  else
+    _silent_assert(false);
+
+  return d_first;
+}
 
 template<class ForwardIt, class T>
 void fill(ForwardIt first, ForwardIt last, const T& value)
 {
   // TODO cache optimization
   // TODO the case of a zero-fill of a continuous storage
-  for (; first != last; ++first)
-    *first = value;
+  if (__builtin_expect(bits::is_compatible(first, last), 1)) {
+    for (; first != last; ++first)
+      *first = value;
+  }
+  else 
+    _silent_assert(false);
 }
 
 template< class InputIt, class UnaryFunction >
 UnaryFunction for_each
   ( InputIt first, InputIt last, UnaryFunction f )
 {
-  for (; first != last; ++first)
-    f(*first);
+  if (__builtin_expect(bits::is_compatible(first, last), 1)) {
+    for (; first != last; ++first)
+      f(*first);
+  }
+  else 
+    _silent_assert(false);
 
   return std::move(f);
 }
@@ -60,12 +84,12 @@ auto swap(T& a, T& b) noexcept
   a.swap(b);
 }
 
-/* Disabled for safety. Use std::array::swap
+/* Disabled for safety. Use std::array::swap. 
 template< class T2, size_t N >
-void swap( T2 (&a)[N], T2 (&b)[N]);
+void swap( T2 (&a)[N], T2 (&b)[N])
+{
+}
 */
-
-
 
 }
 
