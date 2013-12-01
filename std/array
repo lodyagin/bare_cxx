@@ -75,42 +75,42 @@ public:
   template <
     class P2, class R2,
     class = typename enable_if <
-		(is_const<TP>::value || !is_const<P2>::value)
-		&& (is_const<TR>::value || !is_const<R2>::value)
-	 >::type // disable assign const to not-const
+      (is_const<TP>::value || !is_const<P2>::value)
+      && (is_const<TR>::value || !is_const<R2>::value)
+    >::type // disable assign const to not-const
   >
   _array_iterator(_array_iterator<T,N,P2,R2> o) noexcept
     : a_begin(o.a_begin),
-		idx(o.idx),
-		carry(o.carry)
+    idx(o.idx),
+    carry(o.carry)
   {
   }
 
   template <
-	 class P2, class R2,
+   class P2, class R2,
     class = typename enable_if <
-		(is_const<TP>::value || !is_const<P2>::value)
-		&& (is_const<TR>::value || !is_const<R2>::value)
-	 >::type // disable assign const to not-const
+    (is_const<TP>::value || !is_const<P2>::value)
+    && (is_const<TR>::value || !is_const<R2>::value)
+   >::type // disable assign const to not-const
   >
   _array_iterator& operator = 
-	 (_array_iterator<T,N,P2,R2> o) noexcept
+    (_array_iterator<T,N,P2,R2> o) noexcept
   {
-	 a_begin = o.a_begin;
-	 idx = o.idx;
-	 carry = o.carry;
+    a_begin = o.a_begin;
+    idx = o.idx;
+    carry = o.carry;
   }
 
   template<class P2, class R2>
   bool operator ==
-	 (const _array_iterator<T,N,P2,R2> b) const noexcept
+   (const _array_iterator<T,N,P2,R2> b) const noexcept
   { 
     return virtual_ptr() == b.virtual_ptr();
   }
   
   template<class P2, class R2>
   bool operator != 
-	 (const _array_iterator<T,N,P2,R2> b) const noexcept
+    (const _array_iterator<T,N,P2,R2> b) const noexcept
   {
     return !operator==(b);
   }
@@ -118,28 +118,28 @@ public:
 
   template<class P2, class R2>
   bool operator < 
-	 (const _array_iterator<T,N,P2,R2> b) const noexcept
+    (const _array_iterator<T,N,P2,R2> b) const noexcept
   {
     return *this - b < 0;
   }
 
   template<class P2, class R2>
   bool operator > 
-	 (const _array_iterator<T,N,P2,R2> b) const noexcept
+    (const _array_iterator<T,N,P2,R2> b) const noexcept
   {
     return *this - b > 0;
   }
 
   template<class P2, class R2>
   bool operator <= 
-	 (const _array_iterator<T,N,P2,R2> b) const noexcept
+   (const _array_iterator<T,N,P2,R2> b) const noexcept
   {
     return *this - b <= 0;
   }
 
   template<class P2, class R2>
   bool operator >= 
-	 (const _array_iterator<T,N,P2,R2> b) const noexcept
+   (const _array_iterator<T,N,P2,R2> b) const noexcept
   {
     return *this - b >= 0;
   }
@@ -185,7 +185,8 @@ public:
     return *this;
   }
 
-  _array_iterator operator + (difference_type n) const noexcept
+  _array_iterator operator + (difference_type n) const 
+    noexcept
   {
     _array_iterator i(*this);
     i += n;
@@ -211,14 +212,16 @@ public:
     return operator+=(-n);
   }
 
-  _array_iterator operator - (difference_type n) const noexcept
+  _array_iterator operator - (difference_type n) const 
+    noexcept
   {
     _array_iterator i(*this);
     i -= n;
     return i;
   }
 
-  difference_type operator - (const _array_iterator b) const 
+  difference_type operator - (const _array_iterator b) 
+    const 
   noexcept
   {
     //assert(bits::is_compatible(*this, b));
@@ -233,7 +236,8 @@ public:
   const_reference operator [] (difference_type n) 
     const noexcept
   {
-    return const_cast<_array_iterator*>(this)->operator[](n);
+    return const_cast<_array_iterator*>(this)
+      -> operator[](n);
   }
 
   constexpr bool is_compatible(_array_iterator b)
@@ -321,7 +325,7 @@ public:
 
   typedef _array_iterator<T, N, T*, T&> iterator;
   typedef _array_iterator<T, N, const T*, const T&> 
-	 const_iterator;
+    const_iterator;
   typedef std::reverse_iterator<iterator>
     reverse_iterator;
   typedef std::reverse_iterator<const_iterator>
@@ -378,12 +382,12 @@ public:
 #ifdef _UNSAFE_CXX
   T* data()
   {
-	 return &front();
+   return &front();
   }
 
   const T* data() const
   {
-	 return &front();
+   return &front();
   }
 #endif
 
@@ -425,7 +429,7 @@ public:
   const_iterator begin() const noexcept
   {
     return const_iterator
-		(arr, typename const_iterator::begin_t());
+    (arr, typename const_iterator::begin_t());
   }
 
   const_iterator cbegin() const noexcept
@@ -490,14 +494,14 @@ bool operator==( const array<T,N>& lhs,
       return false;
   return true;
 }
-		
+    
 template< class T, std::size_t N >
 bool operator!=( const array<T,N>& lhs,
                  const array<T,N>& rhs )
 {
   return !operator==(lhs, rhs);
 }
-		
+    
 template< class T, std::size_t N >
 bool operator<( const array<T,N>& lhs,
                 const array<T,N>& rhs )
@@ -509,7 +513,7 @@ bool operator<( const array<T,N>& lhs,
   while (i < N && lhs[i] == rhs[i]) ++i;
   return i < N && lhs[i] < rhs[i];
 }
-		
+    
 template< class T, std::size_t N >
 bool operator<=( const array<T,N>& lhs,
                  const array<T,N>& rhs )
@@ -521,14 +525,14 @@ bool operator<=( const array<T,N>& lhs,
   while (i < N && lhs[i] == rhs[i]) ++i;
   return i == N || lhs[i] < rhs[i];
 }
-		
+    
 template< class T, std::size_t N >
 bool operator>( const array<T,N>& lhs,
                 const array<T,N>& rhs )
 {
   return ! operator<= (lhs, rhs);
 }
-		
+    
 template< class T, std::size_t N >
 bool operator>=( const array<T,N>& lhs,
                  const array<T,N>& rhs )
@@ -542,14 +546,14 @@ constexpr T& get( array<T,N>& a )
   static_assert(I < N,"array: the index I is out of range");
   return a[I];
 }
-		
+    
 template< size_t I, class T, size_t N >
 constexpr T&& get( array<T,N>&& a )
 {
   static_assert(I < N,"array: the index I is out of range");
   return a[I]; 
 }
-		
+    
 template< size_t I, class T, size_t N >
 constexpr const T& get( const array<T,N>& a )
 {
@@ -568,10 +572,10 @@ auto for_each
     UnaryFunction f )
   -> bits::EnableFunIf <
        is_same<InputIt, typename array<T,N>::iterator>
-		   ::value
-		 || is_same
-		      <InputIt, typename array<T,N>::const_iterator>
-		        ::value,
+       ::value
+     || is_same
+          <InputIt, typename array<T,N>::const_iterator>
+            ::value,
      UnaryFunction>
 {
   // TODO check assembly 
