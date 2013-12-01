@@ -15,66 +15,75 @@
 #ifndef _BITSET_HEADER_
 #define _BITSET_HEADER_
 
+#include <cstddef>
+#include <array>
+#include <bits/constexpr_math.h>
+
 namespace std {
 
+using namespace bits;
+
 //TODO check errors (with -fstrict-overflow ?)
-template<size_t N, class word_t = uintmax_t>
+template<size_t N>
 class bitset
 {
-public:
-  constexpr static size_t size_in_bytes = 
+  typedef unsigned long long word_t;
+
+  constexpr static size_t size_in_words = 
     (N - 1) / sizeof(word_t) + 1;
 
+  constexpr static uint8_t bits_in_word = 
+    sizeof(word_t) * 8;
+
   constexpr static size_t reserved_in_bits = 
-    size_in_bytes * 8;
+    size_in_words * bits_in_word;
 
-  static_assert
-	 (pow2x<log2x<N>::value>::value == N,
-	  "bitset: N must be 2^n");
+  constexpr static uint8_t used_bits_in_last_word =
+    N % bits_in_word;
 
-  static_assert
-	 (N % sizeof(word_t) % 8 == 0,
-	  "bitset: N must be multiple of word_t");
-
-  static_assert 
-	 (reserved_in_bits == N, 
-	  "bitset: reserved_in_bits == N failed");
+  constexpr static word_t last_word_mask = 
+    n_bits_mask<used_bits_in_last_word, word_t>;
 
   //! A size in bits of a cell to store an index of bit
   //! inside word_t
   constexpr static uint8_t bit_idx_size = 
-	 log2x<sizeof(word_t)*8>::value;
+   log2x<sizeof(word_t)*8>::value;
 
   //! log2(N)
-  constexpr static log2_n_bits = log2x<N>::value;
+  constexpr static uint8_t log2_n_bits = log2x<N>::value;
 
-  class iterator;
+  typedef array<word_t, size_in_words> A;
 
-  class reference
+public:
+  template<class TR>
+  class _iterator;
+
+  class _reference
   {
-    friend class iterator;
+    template<class TR>
+    friend class _iterator;
   public:
     //! Assigns a value to the referenced bit.
-    reference& operator=(bool b) noexcept
+    _reference& operator=(bool b) noexcept
     {
-      (m[bit_addr.cell] &= ~bit_addr.mask)
+      (*bit_addr.it &= ~bit_addr.mask)
         |= (word_t) b << bit_addr.shift;
       return *this;
     }
 
     //! Assigns a value to the referenced bit.
-    reference& operator=(const reference& r) noexcept
+    _reference& operator=(const _reference& r) noexcept
     {
       bit_addr = r.bit_addr;
       return *this;
     }
 
-    bool operator == (const reference& b) const noexcept
+    bool operator == (const _reference& b) const noexcept
     {
       return (bool)*this == (bool) b;
     }
   
-    bool operator != (const reference& b) const noexcept
+    bool operator != (const _reference& b) const noexcept
     {
       return !operator==(b);
     }
@@ -82,7 +91,7 @@ public:
     //! Returns the value of the referenced bit. 
     operator bool() const noexcept
     {
-      return m[bit_addr.cell] & bit_addr.mask;
+      return *bit_addr.in & bit_addr.mask;
     }
 
     //! Returns the inverse of the referenced bit. 
@@ -92,47 +101,42 @@ public:
     }
 
     //! Inverts the referenced bit. 
-    reference& flip() noexcept
+    _reference& flip() noexcept
     {
-      m[bit_addr.cell] ^= bit_addr.mask;
+      *bit_addr.it ^= bit_addr.mask;
       return *this;
     }
   
   protected:
-    reference(word_t* bm_ptr, size_t bit_idx) noexcept
-      : m(bm_ptr), bit_addr(bit_idx) {};
+    _reference(A& bm, size_t bit_idx) noexcept
+      : bit_addr(bm, bit_idx) {};
 
     // TODO test with overlapping bitsets
-    bool is_same (const reference& b) const noexcept
+    bool is_same (const _reference& b) const noexcept
     {
-      if (bit_addr.shift != b.bit_addr.shift
-          || __builtin_expect
-               (bit_addr.carry != b.bit_addr.carry, 0)
-          || __builtin_expect(m == b.m, 1))
+      if (bit_addr.shift != b.bit_addr.shift)
         return false;
-
-      // assert(bit_distance % sizeof(word_t) % 8 == 0);
-      const ptrdiff_t word_distance = 
-        bit_addr - b.bit_addr >> bit_idx_size;
-      return word_distance == m - b.m;
+      else
+        return bit_addr - b.bit_addr == 0;
     }
 
-    bool is_less (const reference& b) const noexcept
+    bool is_less (const _reference& b) const noexcept
     {
       return *this - b < 0;
     }
 
-    bool is_greater (const reference& b) const noexcept
+    bool is_greater (const _reference& b) const noexcept
     {
       return *this - b > 0;
     }
 
-    bool is_less_equal (const reference& b) const noexcept
+    bool is_less_equal (const _reference& b) const noexcept
     {
       return *this - b <= 0;
     }
 
-    bool is_greater_equal (const reference& b) const noexcept
+    bool is_greater_equal (const _reference& b) const 
+      noexcept
     {
       return *this - b >= 0;
     }
@@ -142,29 +146,25 @@ public:
       bit_addr += n;
     }
 
-    reference& operator++ () noexcept
+    _reference& operator++ () noexcept
     {
       ++bit_addr;
       return *this;
     }
 
     // TODO test with overlapping bitsets
-    ptrdiff_t operator - (const reference& b) const
+    ptrdiff_t operator - (const _reference& b) const
       noexcept
     {
-      return bit_addr - b.bit_addr 
-		  + (m - b.m << bit_idx_size);
+      return bit_addr - b.bit_addr;
     }
-
-    word_t* m;
 
     struct bit_addr_t 
     {
-      bit_addr_t(size_t idx) noexcept
-        : cell(idx >> bit_idx_size),
-          shift(idx - (cell << bit_idx_size)),
-          mask((word_t)1 << shift),
-			 carry(idx >> log2_n_bits)
+      bit_addr_t(A& a, size_t idx) noexcept
+        : it(a.begin() + idx / bits_in_word),
+          shift(idx % bits_in_word),
+          mask((word_t)1 << shift)
       {}
 
       //! It cycles around the area. I think it is more
@@ -175,12 +175,7 @@ public:
       {
         if (__builtin_expect(mask <<= 1, 1) == 0) {
           shift = 0; mask = 1;
-          if (__builtin_expect
-				   (++cell > size_in_bytes - 1, 0)) 
-          {
-            cell = 0;
-				++carry;
-          }
+          ++it;
         }
         else {
           ++shift;
@@ -193,11 +188,7 @@ public:
       {
         if (__builtin_expect(mask >>= 1, 1) == 0) {
           shift = 0; mask = (word_t) 1 << bit_idx_size - 1;
-          if (__builtin_expect(cell-- == 0, 0)) 
-			 {
-            cell = size_in_bytes - 1;
-				--carry;
-          }
+          --it;
         }
         else {
           --shift;
@@ -212,10 +203,10 @@ public:
           n & n_bits_mask<bit_idx_size>();
         shift += shift_add;
         rol(mask, shift_add);
-        const size_t div = cell + n; //, size_in_bytes);
-		  cell = div 
+        const size_t div = cell + n;
+        cell = div 
           & n_bits_mask<log2_n_bits-bit_idx_size>();
-		  carry = div >> log2_n_bits - 1;
+        carry = div >> log2_n_bits - 1;
         return &this;
       }
 
@@ -223,113 +214,117 @@ public:
       ptrdiff_t operator - (const bit_addr_t& b) const
         noexcept
       {
-        return (carry - b.carry) * reserved_in_bits
-          + (cell - b.cell) * sizeof(word_t) * 8
+        return (it - b.it) * sizeof(word_t) * 8
           + shift - b.shift;
       }
 
-      size_t cell;
+      A::_iterator it;
       uint8_t shift;
       word_t mask;
-		// incremented or decremented with overlapping
-		int8_t carry : bit_idx_size;
     } bit_addr;
   };
 
   typedef bool value_type;
-  typedef const reference const_reference;
+  // typedef const _reference const_reference;
   typedef ptrdiff_t difference_type;
   typedef size_t size_type;
   
-  class iterator
+  class _iterator<class TR>
   {
     friend bitset;
+
   public:
-    bool operator == (const iterator& b) const noexcept
+    typedef TR reference;
+    typedef const T& const_reference;
+
+    bool operator == (const _iterator& b) const noexcept
     { 
       return ref.is_same(b.ref);
     }
   
-    bool operator != (const iterator& b) const noexcept
+    bool operator != (const _iterator& b) const noexcept
     {
       return !operator==(b);
     }
 
-    bool operator < (const iterator& b) const noexcept
+    bool operator < (const _iterator& b) const noexcept
     {
       return ref.is_less(b.ref);
     }
 
-    bool operator > (const iterator& b) const noexcept
+    bool operator > (const _iterator& b) const noexcept
     {
       return ref.is_greater(b.ref);
     }
 
-    bool operator <= (const iterator& b) const noexcept
+    bool operator <= (const _iterator& b) const noexcept
     {
       return ref.is_less_equal(b.ref);
     }
 
-    bool operator >= (const iterator& b) const noexcept
+    bool operator >= (const _iterator& b) const noexcept
     {
       return ref.is_greater_equal(b.ref);
     }
 
     reference operator * () noexcept { return ref; }
 
-    const_reference operator * () const noexcept { return ref; }
+    const_reference operator * () const noexcept 
+    { 
+      return ref; 
+    }
 
-    iterator& operator ++ () noexcept 
+    _iterator& operator ++ () noexcept 
     { 
       ++ref; 
       return *this; 
     }
 
-    iterator operator ++ (int) noexcept 
+    _iterator operator ++ (int) noexcept 
     { 
-      iterator res(*this);
+      _iterator res(*this);
       ++(*this);
       return res; 
     }
 
-    iterator& operator -- () noexcept 
+    _iterator& operator -- () noexcept 
     { 
       --ref; 
       return *this; 
     }
 
-    iterator operator -- (int) noexcept 
+    _iterator operator -- (int) noexcept 
     { 
-      iterator res(*this);
+      _iterator res(*this);
       --(*this);
       return res; 
     }
 
-    iterator& operator += (ptrdiff_t n) noexcept
+    _iterator& operator += (ptrdiff_t n) noexcept
     {
       ref.forward(n);
       return *this;
     }
 
-    iterator& operator -= (ptrdiff_t n) noexcept
+    _iterator& operator -= (ptrdiff_t n) noexcept
     {
       ref.forward(-n);
       return *this;
     }
 
-    iterator operator + (ptrdiff_t n) const noexcept
+    _iterator operator + (ptrdiff_t n) const noexcept
     {
-      iterator copy(*this);
+      _iterator copy(*this);
       return copy += n;
     }
 
-    iterator operator - (ptrdiff_t n) const noexcept
+    _iterator operator - (ptrdiff_t n) const noexcept
     {
-      iterator copy(*this);
+      _iterator copy(*this);
       return copy -= n;
     }
 
-    ptrdiff_t operator - (const iterator& b) const
+    ptrdiff_t operator - (const _iterator& b) const
       noexcept
     {
       return distance(b);
@@ -347,47 +342,52 @@ public:
     }
 
   private:
-    iterator(word_t* bm_ptr, size_t bit_idx) noexcept
-		: ref(bm_ptr, bit_idx) {}
+    _iterator(A& bm, size_t bit_idx) noexcept
+      : ref(bm, bit_idx) {}
     reference ref;
   };
 
-  typedef const iterator const_iterator;
+  typedef _iterator<T&> iterator;
+  typedef _iterator<const T&> const_iterator;
 
-  bitset() noexcept : bm(bm_), end_it(begin()) {}
+  constexpr bitset() noexcept : bm{0} {}
 
-  // TODO do not need deep copy bm_ if bm != bm_ 
+  constexpr bitset(unsigned long long val) noexcept
+    : bm {val}
+  {
+  }
+
   bitset(const bitset& b) noexcept = default;
 
-  // TODO do not need deep copy bm_ if bm != bm_ 
   bitset& operator=(const bitset& b) noexcept = default;
 
-  //! Need skip not used bits in the last cell
-  bool operator == (const bitset&) noexcept = delete;
+  //! Skips not used bits in the last cell
+  bool operator == (const bitset& b) noexcept
+  {
+    if (last_word_mask == 0) {
+      return equal(bm.begin(), b.bm.begin(), bm.end());
+    }
+    else {
+      const word_t last_w_a = bm[N-1] & last_word_mask;
+      const word_t last_w_b = b.bm[N-1] & last_word_mask;
 
-  //! Need skip not used bits in the last cell
-  bool operator != (const bitset&) noexcept = delete;
+      return last_w_a == last_w_b
+        && equal(bm.begin(), b.bm.begin(), bm.end() - 1);
+    }
+  }
+
+  //! Skips not used bits in the last cell
+  bool operator != (const bitset& b) noexcept
+  {
+    return ! operator == (b);
+  }
 
   // disabled for safety
   // void swap(bitset& b) ?noexcept
   
-  size_type size() const noexcept
+  constexpr size_type size() const
   {
-	 const size_t sz = end() - begin();
-	 if (__builtin_expect(sz <= N, 1))
-		return sz;
-	 else
-		return max_size();
-  }
-
-  size_type max_size() const noexcept
-  {
-	 return N;
-  }
-
-  bool empty() const noexcept
-  {
-	 return begin() == end();
+    return N;
   }
 
   iterator begin() noexcept
@@ -402,7 +402,7 @@ public:
 
   const_iterator cbegin() noexcept
   {
-	 return const_cast<const bitset*>(this)->begin();
+   return const_cast<const bitset*>(this)->begin();
   }
 
   iterator end() noexcept
@@ -417,20 +417,18 @@ public:
 
   const_iterator cend() noexcept
   {
-	 return const_cast<const bitset*>(this)->end();
+     return const_cast<const bitset*>(this)->end();
   }
 
 private:
-  word_t bm_[size_in_bytes];
-  word_t* bm;
-  iterator end_it;
+  A bm;
 };
 
-template<size_t N, class word_t = uintmax_t>
-typename bitset<N, word_t>::iterator 
+template<size_t N>
+typename bitset<N>::iterator 
 operator + 
   (ptrdiff_t n, 
-   const typename bitset<N, word_t>::iterator& it
+   const typename bitset<N>::iterator& it
    )  noexcept
 {
   return it.operator+(n);
