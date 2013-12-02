@@ -218,7 +218,7 @@ public:
           + shift - b.shift;
       }
 
-      A::_iterator it;
+      typename A::_iterator it;
       uint8_t shift;
       word_t mask;
     } bit_addr;
@@ -229,13 +229,14 @@ public:
   typedef ptrdiff_t difference_type;
   typedef size_t size_type;
   
-  class _iterator<class TR>
+  template<class TR>
+  class _iterator
   {
     friend bitset;
 
   public:
     typedef TR reference;
-    typedef const T& const_reference;
+    typedef const _reference const_reference;
 
     bool operator == (const _iterator& b) const noexcept
     { 
@@ -347,8 +348,8 @@ public:
     reference ref;
   };
 
-  typedef _iterator<T&> iterator;
-  typedef _iterator<const T&> const_iterator;
+  typedef _iterator<_reference> iterator;
+  typedef _iterator<const _reference> const_iterator;
 
   constexpr bitset() noexcept : bm{0} {}
 
