@@ -17,6 +17,7 @@
 
 #include <cstddef>
 #include <array>
+#include <limits>
 #include <bits/constexpr_math.h>
 #include <bits/bits.h>
 
@@ -28,6 +29,9 @@ using namespace bits;
 template<size_t N>
 class bitset
 {
+  // to allow use N+1 in the end() expression
+  static_assert(N < numeric_limits<size_t>::max() - 1);
+
   typedef unsigned long long word_t;
 
   constexpr static size_t size_in_words = 
@@ -411,7 +415,7 @@ public:
 
   iterator end() noexcept
   {
-    return end_it;
+    return iterator(bm, N + 1);
   }
 
   const_iterator end() const noexcept

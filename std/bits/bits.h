@@ -31,6 +31,13 @@ void rol(Int& i, uint8_t shift)
 }
 
 template<class Int>
+void rol1(Int& i)
+{
+  asm ("rol %0, 1"
+       : "+rm" (i));
+}
+
+template<class Int>
 void ror(Int& i, uint8_t shift)
 {
   assert(shift & n_bits_mask<log2x<sizeof(Int)*8>::value>()
@@ -39,6 +46,13 @@ void ror(Int& i, uint8_t shift)
   asm ("ror %0, cl"
        : "+rm" (i)
        : "Jc" (shift));
+}
+
+template<class Int>
+void ror1(Int& i)
+{
+  asm ("ror %0, 1"
+       : "+rm" (i));
 }
 
 }}
