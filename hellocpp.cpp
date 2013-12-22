@@ -2,6 +2,7 @@
 #include <locale>
 #include <limits>
 #include <bits/constexpr_math.h>
+#include <bitset>
 
 using namespace std;
 
@@ -13,6 +14,8 @@ public:
 
 int main()
 {
+  bitset<10> a;
+
   ostreambuf_iterator<char> out(cout);
   np n;
 

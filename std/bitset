@@ -18,6 +18,7 @@
 #include <cstddef>
 #include <array>
 #include <bits/constexpr_math.h>
+#include <bits/bits.h>
 
 namespace std {
 
@@ -47,7 +48,7 @@ class bitset
   //! A size in bits of a cell to store an index of bit
   //! inside word_t
   constexpr static uint8_t bit_idx_size = 
-   log2x<sizeof(word_t)*8>::value;
+    log2x<bits_in_word>::value;
 
   //! log2(N)
   constexpr static uint8_t log2_n_bits = log2x<N>::value;
@@ -187,7 +188,8 @@ public:
       bit_addr_t& operator -- () noexcept
       {
         if (__builtin_expect(mask >>= 1, 1) == 0) {
-          shift = 0; mask = (word_t) 1 << bit_idx_size - 1;
+          shift = 0; 
+          mask = n_bits_mask<bit_idx_size, word_t>();
           --it;
         }
         else {
@@ -199,15 +201,16 @@ public:
       // TODO test with negative values
       bit_addr_t& operator += (ptrdiff_t n) noexcept
       {
-        const int8_t shift_add = 
-          n & n_bits_mask<bit_idx_size>();
-        shift += shift_add;
-        rol(mask, shift_add);
-        const size_t div = cell + n;
-        cell = div 
-          & n_bits_mask<log2_n_bits-bit_idx_size>();
-        carry = div >> log2_n_bits - 1;
-        return &this;
+        const int8_t shift_add = n % bits_in_word;
+        (shift += shift_add) %= bits_in_word;
+
+        if (n >= 0)
+          rol(mask, shift_add);
+        else
+          ror(mask, -shift_add);
+
+        it += n / bits_in_word;
+        return *this;
       }
 
       // TODO test for negative values

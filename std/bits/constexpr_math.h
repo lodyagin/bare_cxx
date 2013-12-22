@@ -68,7 +68,7 @@ struct pow10x<0>
 };
 
 //! Return mask with n lower bits set
-template<uint8_t n, class T>
+template<uint8_t n, class T = uint8_t>
 constexpr T n_bits_mask()
 {
   return pow2x<n+1>::value - 1;
