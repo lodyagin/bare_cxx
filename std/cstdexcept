@@ -1,0 +1,36 @@
+// -*-coding: mule-utf-8-unix; fill-column: 58 -*-
+/** 
+ * @file
+ *
+ * This file is a part of Bare C++ library. Bare C++
+ * library is a standard library specially designed for
+ * systems without memory protection like exokernel
+ * operating systems.
+ *
+ * @author Sergei Lodyagin <serg@kogorta.dp.ua>
+ * @copyright (C) 2014 Cohors LLC
+ *
+ */
+
+#ifndef _CSTDLIB_CSTDEXCEPT
+#define _CSTDLIB_CSTDEXCEPT
+
+#include <exception>
+
+namespace std {
+
+class logic_error : exception
+{
+public:
+  // TODO
+};
+
+class invalid_argument : logic_error
+{
+  // TODO
+};
+
+}
+
+#endif
+

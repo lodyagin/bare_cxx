@@ -24,6 +24,12 @@
 
 namespace std {
 
+template<class T> 
+constexpr const T& min(const T& a, const T& b)
+{
+  return (a < b) ? a : b;
+}
+
 template< class InputIt, class OutputIt >
 OutputIt copy( InputIt first, InputIt last, OutputIt d_first )
 {

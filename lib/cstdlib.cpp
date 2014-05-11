@@ -21,14 +21,14 @@ namespace bits {
   extern int _exit_code;
 }
 
-[[noreturn]] void abort()
+[[noreturn]] void abort() noexcept
 {
   _Exit(EXIT_FAILURE);
 }
 
 [[noreturn]] void exit(int exit_code);
 
-[[noreturn]] void _Exit(int exit_code)
+[[noreturn]] void _Exit(int exit_code) noexcept
 {
   bits::_exit_code = exit_code;
   longjmp(bits::_exit_jump_buf, 1);

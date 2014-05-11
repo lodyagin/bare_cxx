@@ -15,9 +15,11 @@
 #ifndef _BITSET_HEADER_
 #define _BITSET_HEADER_
 
+#include <cstdexcept>
 #include <cstddef>
 #include <array>
 #include <limits>
+#include <algorithm>
 #include <bits/constexpr_math.h>
 #include <bits/bits.h>
 
@@ -30,12 +32,13 @@ template<size_t N>
 class bitset
 {
   // to allow use N+1 in the end() expression
-  static_assert(N < numeric_limits<size_t>::max() - 1);
+  static_assert(N < numeric_limits<size_t>::max() - 1,
+	 "bitset is too big");
 
   typedef unsigned long long word_t;
 
   constexpr static size_t size_in_words = 
-    (N - 1) / sizeof(word_t) + 1;
+    N > 0 ? (N - 1) / sizeof(word_t) + 1 : 0;
 
   constexpr static uint8_t bits_in_word = 
     sizeof(word_t) * 8;
@@ -365,6 +368,29 @@ public:
   {
   }
 
+  template<class CharT, size_t M>
+  explicit bitset(
+	 const CharT (&str)[M],
+    const size_t n = -1,
+    const CharT zero = CharT('0'), 
+    const CharT one = CharT('1')
+  ) 
+	 : bitset() // init with zero
+  {
+	 if (n != M-1) // no part of string when lexem is used
+		throw invalid_argument();
+
+	 size_t i = 0;
+	 for (auto r : *this)
+	 {
+		const CharT ch = str[i++];
+		if (ch == one)
+		  r = 1;
+		else if (ch != zero)
+		  throw invalid_argument();
+	 }
+  }
+
   bitset(const bitset& b) noexcept = default;
 
   bitset& operator=(const bitset& b) noexcept = default;
@@ -420,7 +446,7 @@ public:
 
   const_iterator end() const noexcept
   {
-    return end_it;
+    return iterator(bm, N + 1);
   }
 
   const_iterator cend() noexcept
@@ -442,10 +468,11 @@ operator +
   return it.operator+(n);
 }
 
-
+#if 0
 template<>
 class bitset<0> {};
 
+#endif
 }
 
 #endif
