@@ -68,6 +68,25 @@ _Unwind_Reason_Code __gxx_personality_v0(
   _Unwind_Context* context
 ) noexcept;
 
+void *__cxa_allocate_exception(std::size_t thrown_size);
+
+void __cxa_throw(
+  void *thrown_exception, 
+  std::type_info *tinfo, 
+  void (*dest) (void *) 
+);
+
+}
+
+// see http://monoinfinito.wordpress.com/2013/06/13/c-exceptions-under-the-hood-appendix-ii-metaclasses-and-rtti-on-c/
+namespace __cxxabiv1 {
+  struct __class_type_info {
+    virtual void foo() {}
+  } ti;
+
+  struct __vmi_class_type_info {
+    virtual void foo() {}
+  } vmi_ti;
 }
 
 #endif
