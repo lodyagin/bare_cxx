@@ -17,70 +17,15 @@
 #include <streambuf>
 #include <ostream>
 #include <bits/ext_constr.h>
-
-#ifdef LINUX
-
-namespace bare {
-
-inline void b_output_chars
-  (const char *str, unsigned long nbr)
-{
-  register int syscall asm ("rax") = 4; //sys_write
-  register int file asm ("rbx") = 1; // stdout
-  register const char* buf asm ("rcx") = str;
-  register unsigned long n asm ("rdx") = nbr;
-  asm ("int $0x80" 
-       : : "r" (file), "r" (buf), "r" (n), "r" (syscall)
-       );
-}
-
-}
-
-#else
-
-namespace bare {
-
-inline void b_output_chars
-  (const char *str, unsigned long nbr)
-{
-  asm volatile ("call *0x00100018" : : "S"(str), "c"(nbr));
-}
-
-}
-
-#endif
+#include <bare/video>
 
 namespace std {
 
 using namespace bare;
 using namespace bits;
 
-/**
-  * Output to a terminal.
-  * @author Sergei Lodyagin
-  */
-template <
-  class CharT,
-  class Traits = std::char_traits<CharT>
->
-class _terminal_out_basic_streambuf 
-  : public basic_streambuf<CharT, Traits>
-{
-  typedef typename 
-    basic_streambuf<CharT, Traits>::char_type 
-    char_type;
-
-protected:
-  streamsize xsputn
-    (const char_type* s, std::streamsize count) override
-  {
-    b_output_chars(s, count);
-    return count;
-  }
-};
-
 _externally_constructed
-  <_terminal_out_basic_streambuf<char>>
+  <video::basic_streambuf<char>>
     _terminal_out_streambuf_inst;
 
 _externally_constructed<basic_ostream<char>> cout;
@@ -101,7 +46,7 @@ ios_base::Init::Init()
   if (nifty_counter++ == 0)
   {
     new(&_terminal_out_streambuf_inst.m) 
-      _terminal_out_basic_streambuf<char>();
+      video::basic_streambuf<char>();
 
     new(&cout.m) ostream
       (&_terminal_out_streambuf_inst.m);

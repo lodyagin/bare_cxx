@@ -1,0 +1,3 @@
+[submodule "std/types"]
+	path = std/types
+	url = git@github.com:lodyagin/types.git

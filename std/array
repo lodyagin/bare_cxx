@@ -15,7 +15,7 @@
 #ifndef _ARRAY_HEADER_
 #define _ARRAY_HEADER_
 
-#include <iterator>
+#include <bits/iterator.h>
 #include <cstddef>
 #include <algorithm>
 #include <limits>
@@ -566,17 +566,17 @@ template <
   class InputIt, class UnaryFunction,
   class T, size_t N
 >
-auto for_each
-  ( InputIt first, 
-    InputIt last, 
-    UnaryFunction f )
-  -> bits::EnableFunIf <
-       is_same<InputIt, typename array<T,N>::iterator>
-       ::value
-     || is_same
-          <InputIt, typename array<T,N>::const_iterator>
-            ::value,
-     UnaryFunction>
+typename std::enable_if<
+   is_same<InputIt, typename array<T,N>::iterator>::value
+|| is_same<InputIt, typename array<T,N>::const_iterator>
+     ::value,
+  UnaryFunction
+>
+for_each( 
+  InputIt first, 
+  InputIt last, 
+  UnaryFunction f 
+)
 {
   // TODO check assembly 
   if (__builtin_expect(!bits::is_compatible(first, last),0)

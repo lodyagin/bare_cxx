@@ -221,54 +221,6 @@ class basic_string
 typedef basic_string<char> string;
 typedef basic_string<wchar_t> wstring;
 
-}
-
-namespace bare {
-
-/**
- * Just constexpr_basic_string. It is not defined in the
- * C++ standarg but is used in bare_c++lib for "wrap"
- * string literals and not pass strings with unpredicted
- * length to other functions (e.g., streams).
- *
- * @author Sergei Lodyagin
- */
-template <
-  class CharT,
-  class Traits = std::char_traits<CharT>
-> 
-class constexpr_basic_string 
-  : public std::bits::_basic_string_impl
-      <CharT, Traits /*, std:pre_allocated*/ >
-{
-};
-
-template <class Traits>
-class constexpr_basic_string<char, Traits>
-  : public std::bits::_basic_string_impl<char, Traits>
-{
-public:
-  typedef typename std::bits::_basic_string_impl<char, Traits>
-    ::size_type size_type;
-
-  template<std::uint32_t N>
-  constexpr_basic_string(const char(&str)[N])
-    : len(N-1), arr(str)
-  {
-  }
-
-  size_type size() const { return len; }
-  const char* data() const { return arr; }
-  const char* c_str() const { return arr; }
-
-private:
-  const size_type len;
-  const char* const arr;
-};
-
-typedef constexpr_basic_string<char> constexpr_string;
-typedef constexpr_basic_string<wchar_t> constexpr_wstring;
-
-}
+} // std
 
 #endif

@@ -1,4 +1,4 @@
-// -*-coding: mule-utf-8-unix; fill-column: 58 -*-
+// -*-coding: mule-utf-8-unix; fill-column: 58;mode:c++ -*-
 /** 
  * @file
  *
@@ -12,17 +12,35 @@
  *
  */
 
-#ifndef _CSTDLIB_EXCEPTION
-#define _CSTDLIB_EXCEPTION
+#ifndef _EXCEPTION_HEADER_
+#define _EXCEPTION_HEADER_
+
+#include <types/string.h>
 
 namespace std {
 
 class exception
 {
 public:
+  exception() noexcept {}
+
+  //! Postcondition: If *this and rhs both have dynamic
+  //! type exception then strcmp(what(), rhs.what()) shall
+  //! equal 0.
+  exception(const exception& other) noexcept = default;
+
+  exception& operator=(const exception& o) noexcept
+    = default;
+
   virtual ~exception() {}
-//  exception& operator=(const exception& other) noexcept {}
-//  virtual const char* what() const noexcept = 0;
+
+  virtual const char* what() const noexcept
+  {
+	 return what_str.c_str();
+  }
+
+private:
+  ::types::constexpr_string what_str;
 };
 
 }

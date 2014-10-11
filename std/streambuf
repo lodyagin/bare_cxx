@@ -1,4 +1,4 @@
-// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+// -*-coding: mule-utf-8-unix; fill-column: 59; mode:c++ -*-
 /** 
  * @file
  *
@@ -16,11 +16,13 @@
 #define _STREAMBUF_HEADER_
 
 #include <string>
+#include <types/string.h>
 
 namespace std {
 
 /**
   * It is not close to the standard yet.
+  * noexcept in some methods is a bare c++ extension
   * @author Sergei Lodyagin
   */
 template <
@@ -39,7 +41,7 @@ public:
 
   int pubsync() { return sync(); }
 
-  int_type sputc(char_type ch)
+  int_type sputc(char_type ch) noexcept
   {
     xsputn(&ch, 1);
     return Traits::to_int_type(ch);
@@ -47,7 +49,9 @@ public:
 
   //! A version with a non-standard argument, we use a safe
   //! size-limted string instead of const char* + count.
-  streamsize sputn(bare::constexpr_basic_string<char_type> s)
+  streamsize sputn(
+	 ::types::basic_constexpr_string<CharT, Traits> s
+  ) noexcept
   {
     xsputn(s.data(), s.size());
     return s.size();
@@ -58,8 +62,10 @@ protected:
 
   virtual int sync() { return 0; }
 
-  virtual streamsize xsputn
-    (const char_type* s, std::streamsize count) = 0;
+  virtual streamsize xsputn(
+	 const char_type* s, 
+	 std::streamsize count
+  ) noexcept = 0; 
 };
 
 typedef basic_streambuf<char> streambuf;

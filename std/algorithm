@@ -18,7 +18,7 @@
 #include <utility>
 #include <type_traits>
 #include <cstdlib>
-#include <bits/meta.h>
+//#include <bits/meta.h>
 #include <bits/iterator.h>
 #include <bits/silent_assert.h>
 
@@ -74,8 +74,8 @@ UnaryFunction for_each
 // Swap version for scalars
 // FIXME move semantic, noexcept specification
 template<class T>
-auto swap(T& a, T& b) noexcept
-  -> bits::EnableFunIf<std::is_scalar<T>::value, void>
+typename std::enable_if<std::is_scalar<T>::value>::type 
+swap(T& a, T& b) noexcept
 {
   //TODO check the compilation result (assembler)
   T temp = a;

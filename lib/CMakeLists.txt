@@ -9,6 +9,7 @@ set(bare_c++lib_SOURCES
     num_put.cpp
     start/atexit.cpp
     start/pure_virtual.cpp
+	 unwind/unwind.cpp
 )
 
 add_library(bare_c++lib ${bare_c++lib_SOURCES})

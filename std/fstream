@@ -33,6 +33,7 @@ protected:
   using handler_t = uint64_t;
 
   handler_t h = 0;
+  ::ios_base::openmode the_mode = 0;
 
 public:
   basic_filebuf* open(
@@ -40,10 +41,14 @@ public:
 	 ::ios_base::openmode mode
   )
   {
+    if (mode & 
+
 	 if (!h)
 		h = b_file_open(s.c_str());
-	 if (h)
+	 if (h) {
+		the_mode = mode;
 		return this;
+	 }
   }
 };
 

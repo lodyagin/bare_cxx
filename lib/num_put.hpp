@@ -18,6 +18,7 @@
 #include <locale>
 #include <array>
 #include <bits/constexpr_math.h>
+#include <bare/video>
 
 namespace std { namespace bits {
 

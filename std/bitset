@@ -228,7 +228,7 @@ public:
           + shift - b.shift;
       }
 
-      typename A::_iterator it;
+      typename A::iterator it;
       uint8_t shift;
       word_t mask;
     } bit_addr;
