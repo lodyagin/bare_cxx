@@ -15,11 +15,15 @@
 #ifndef _LIMITS_HEADER_
 #define _LIMITS_HEADER_
 
+#include <cstdint>
 #include <bits/constexpr_math.h>
 
 namespace std {
 
 using namespace bits;
+
+//! log10(2)
+constexpr double _log10_2 = 0.301029995664;
 
 template<class T>
 class numeric_limits
@@ -42,6 +46,9 @@ public:
   {
     return (unsigned long long) -1;
   }
+
+  static constexpr int digits = CHAR_BIT*sizeof(long long);
+  static constexpr int digits10 = digits * _log10_2;
 };
 
 template<>
@@ -58,6 +65,10 @@ public:
   {
     return pow2x<sizeof(long long) * 8 - 1>::value - 1;
   }
+
+  static constexpr int digits = 
+    CHAR_BIT * sizeof(long long) - 1;
+  static constexpr int digits10 = digits * _log10_2;
 };
 
 template<>
@@ -74,6 +85,9 @@ public:
   {
     return (unsigned long) -1;
   }
+
+  static constexpr int digits = CHAR_BIT*sizeof(long);
+  static constexpr int digits10 = digits * _log10_2;
 };
 
 template<>
@@ -90,6 +104,9 @@ public:
   {
     return pow2x<sizeof(long) * 8 - 1>::value - 1;
   }
+
+  static constexpr int digits = CHAR_BIT * sizeof(long)- 1;
+  static constexpr int digits10 = digits * _log10_2;
 };
 
 template<>
@@ -106,6 +123,9 @@ public:
   {
     return (unsigned int) -1;
   }
+
+  static constexpr int digits = CHAR_BIT*sizeof(int);
+  static constexpr int digits10 = digits * _log10_2;
 };
 
 template<>
@@ -122,7 +142,51 @@ public:
   {
     return pow2x<sizeof(int) * 8 - 1>::value - 1;
   }
+
+  static constexpr int digits = CHAR_BIT * sizeof(int) - 1;
+  static constexpr int digits10 = digits * _log10_2;
 };
+
+template<>
+class numeric_limits<unsigned short>
+{
+public:
+  static constexpr bool is_specialized = true;
+  static constexpr unsigned short min()
+  {
+    return 0;
+  }
+
+  static constexpr unsigned short max()
+  {
+    return (unsigned short) -1;
+  }
+
+  static constexpr int digits = CHAR_BIT*sizeof(short);
+  static constexpr int digits10 = digits * _log10_2;
+};
+
+template<>
+class numeric_limits<short>
+{
+public:
+  static constexpr bool is_specialized = true;
+  static constexpr short min()
+  {
+    return - max() - 1;
+  }
+
+  static constexpr short max()
+  {
+    return pow2x<sizeof(short) * 8 - 1>::value - 1;
+  }
+
+  static constexpr int digits = CHAR_BIT * sizeof(short)- 1;
+  static constexpr int digits10 = digits * _log10_2;
+};
+
+template<class T>
+class numeric_limits<T&> : public numeric_limits<T> {};
 
 }
 
