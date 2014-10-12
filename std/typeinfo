@@ -1,0 +1,37 @@
+// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+/** 
+ * @file
+ *
+ * This file is a part of Bare C++ library. Bare C++
+ * library is a standard library specially designed for
+ * systems without memory protection like exokernel
+ * operating systems.
+ *
+ * @author Sergei Lodyagin <serg@kogorta.dp.ua>
+ * @copyright (C) 2014 Cohors LLC
+ *
+ */
+
+#ifndef _TYPEINFO_HEADER_
+#define _TYPEINFO_HEADER_
+
+namespace std {
+
+class type_info
+{
+public:
+  virtual ~type_info();
+
+  const char* name() const
+  { 
+    return *mangled_name == '*' 
+      ? mangled_name + 1 : mangled_name; 
+  }
+
+protected:
+  const char* mangled_name;
+};
+
+} // std
+
+#endif

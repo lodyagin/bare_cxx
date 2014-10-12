@@ -15,8 +15,11 @@
 #ifndef _MEMORY_HEADER_
 #define _MEMORY_HEADER_
 
+#include <cstdint>
+#include <new>
+
 namespace std {
 
-}
+} // std
 
 #endif
