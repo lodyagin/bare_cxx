@@ -188,6 +188,12 @@ public:
 template<class T>
 class numeric_limits<T&> : public numeric_limits<T> {};
 
+template<class T>
+class numeric_limits<T&&> : public numeric_limits<T> {};
+
+template<class T>
+class numeric_limits<const T&> : public numeric_limits<T> {};
+
 }
 
 #endif

@@ -16,6 +16,8 @@
 #include <cstdlib>
 #include "unwind.h"
 #include <bare/video>
+#include <bits/stream_iterator.h>
+#include <types/compound_message.h>
 
 //! Debug output
 #define DBG_(msg) \
@@ -60,8 +62,29 @@ _Unwind_Reason_Code __gxx_personality_v0(
 
 void *__cxa_allocate_exception(std::size_t thrown_size)
 {
-  // TODO
-  ABORT_DBG("__cxa_allocate_exception()");
+  using Out = std::ostreambuf_iterator<char>;
+
+  types::compound_message<Out>(
+    "__cxa_allocate_exception(", thrown_size,
+    ")\n"
+  ).stringify(Out(std::cerr.rdbuf()), std::cerr);
+
+  // FIXME no reenterant
+  static char buf[255];
+
+  if (thrown_size > sizeof(buf)) {
+#if 1
+    types::compound_message<Out>(
+      "__cxa_allocate_exception(", thrown_size,
+      ") out of memory"
+    ).stringify(Out(std::cerr.rdbuf()), std::cerr);
+    std::abort();
+#else
+    ABORT_DBG("__cxa_allocate_exception out of memory");
+#endif
+  }
+
+  return buf;
 }
 
 void __cxa_throw(
@@ -70,6 +93,6 @@ void __cxa_throw(
   void (*dest) (void *) 
 )
 {
-  // TODO
+  // TODO dump exception
   ABORT_DBG("__cxa_throw()");
 }

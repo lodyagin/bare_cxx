@@ -20,6 +20,7 @@
 #include <streambuf>
 #include <string>
 #include <algorithm>
+#include <bits/locale.h>
 #include <bits/streamtypes.h>
 
 namespace std {
@@ -71,6 +72,8 @@ public:
     swap(f, flags_);
     return f;
   }
+
+  locale getloc() const { return locale(); }
 
   class Init
   {

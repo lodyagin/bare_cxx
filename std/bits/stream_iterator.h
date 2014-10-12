@@ -45,7 +45,7 @@ public:
     //FIXME nullptr
   }
 
-  ostreambuf_iterator& operator = (charT c)
+  ostreambuf_iterator& operator = (charT c) noexcept
   {
     if (!failed())
       failed_ = (sbuf_->sputc(c) == traits::eof());

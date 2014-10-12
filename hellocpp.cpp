@@ -14,7 +14,7 @@ public:
 
 int main()
 {
-  bitset<10> a;
+//  bitset<10> a("0101");
 
   ostreambuf_iterator<char> out(cout);
   np n;

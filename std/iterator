@@ -18,6 +18,6 @@
 #include <cstddef>
 
 #include <bits/iterator.h>
-#include <bits/stream_iterator.h>
+//#include <bits/stream_iterator.h>
 
 #endif

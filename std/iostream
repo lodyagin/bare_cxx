@@ -18,16 +18,16 @@
 #include <config.bare>
 #include <ostream>
 
-namespace _STD {
+namespace std {
 
-extern std::ostream cout;
-extern std::wostream wcout;
+extern ostream cout;
+extern wostream wcout;
 
-extern std::ostream cerr;
-extern std::wostream wcerr;
+extern ostream cerr;
+extern wostream wcerr;
 
-extern std::ostream clog;
-extern std::wostream wclog;
+extern ostream clog;
+extern wostream wclog;
 
 }
 

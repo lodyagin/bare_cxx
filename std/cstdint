@@ -14,6 +14,9 @@
 #ifndef _CSTDINT_HEADER
 #define _CSTDINT_HEADER
 
+//! number of bits in byte 
+#define CHAR_BIT 8
+
 namespace std {
 
 typedef signed char int8_t;

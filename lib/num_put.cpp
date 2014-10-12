@@ -12,6 +12,7 @@
  *
  */
 
+#include <bits/facets.h>
 #include "./num_put.hpp"
 
 namespace std { namespace bits {
