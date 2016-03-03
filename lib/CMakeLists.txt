@@ -7,6 +7,7 @@ set(bare_c++lib_SOURCES
     iostream.cpp
     new.cpp
     num_put.cpp
+    ostream.cpp
     start/atexit.cpp
     start/pure_virtual.cpp
 	 unwind/unwind.cpp

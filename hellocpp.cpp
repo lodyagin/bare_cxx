@@ -14,7 +14,7 @@ public:
 
 int main()
 {
-//  bitset<10> a("0101");
+  // bitset<10> a("0101");
 
   ostreambuf_iterator<char> out(cout);
   np n;
@@ -22,29 +22,12 @@ int main()
   cout << "Hello World!\n";
   cout << "I know different numbers.\n";
 
-  cout << "Million:\t";
-  n.put(out, cout, ' ', bits::pow10x<6>::value);
-  cout << "\n";
-
-  cout << "Billion:\t";
-  n.put(out, cout, ' ', bits::pow10x<9>::value);
-  cout << "\n";
-
-  cout << "Trillion:\t";
-  n.put(out, cout, ' ', bits::pow10x<12>::value);
-  cout << "\n";
-
-  cout << "Quadrillion:\t";
-  n.put(out, cout, ' ', bits::pow10x<15>::value);
-  cout << "\n";
-
-  cout << "Quintillion:\t";
-  n.put(out, cout, ' ', bits::pow10x<18>::value);
-  cout << "\n";
-
-  cout << "My biggest number is:\t";
-  n.put(out, cout, ' ', numeric_limits<uintmax_t>::max());
-  cout << "\n";
-
+  cout << "Million:\t" << std::bits::pow10x<6>::value << '\n';
+  cout << "Billion:\t" << std::bits::pow10x<9>::value << '\n';
+  cout << "Trillion:\t" << std::bits::pow10x<12>::value << '\n';
+  cout << "Quadrillion:\t" << std::bits::pow10x<15>::value << '\n';
+  cout << "Quintillion:\t" << std::bits::pow10x<18>::value << '\n';
+  cout << "My biggest number is:\t"
+       << numeric_limits<uintmax_t>::max() << '\n';
   cout << "Bye!\n";
 }

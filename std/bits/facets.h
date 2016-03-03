@@ -28,7 +28,7 @@ OutputIt num_put
     CharT fill, 
     T v );
 
-}
+} // namespace bits
 
 template <
   class CharT,
@@ -49,7 +49,7 @@ public:
   {}
 
   iter_type put
-	 ( iter_type out, 
+    ( iter_type out, 
       ios_base& str, 
       char_type fill, 
       unsigned long long v ) const
@@ -73,4 +73,40 @@ protected:
 
 } // std
 
+namespace bits
+{
+
+//! Usually most of them must come from the locale but 
+//! keeping them separately gives more freedom
+//! like using different OutputIt types
+//! (e.g. output directly to a char buffer).
+struct facets
+{
+#if 0 // TODO - static in function
+    template<class Facet>
+    static const Facet& locale_independent()
+    {
+        static Facet* f = new Facet(1); /* NB ref count is 1 */ 
+        assert(f);
+        return *f;
+    }
+#else
+
+  template<class CharT, class OutputIt>
+  struct locale_independent
+  {
+    static ::std::num_put<CharT, OutputIt> num_put;
+  };
+#endif
+};
+
+template<class CharT, class OutputIt>
+::std::num_put<CharT, OutputIt> facets::
+  locale_independent<CharT, OutputIt>
+//
+::num_put;
+
+
+} // namespace bits
+    
 #endif

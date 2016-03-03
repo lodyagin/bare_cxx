@@ -17,6 +17,9 @@
 
 #include <config.bare>
 #include <ios>
+#include <bits/facets.h>
+#include <bits/locale.h>
+#include <bits/stream_iterator.h>
 
 namespace _STD {
 
@@ -81,6 +84,8 @@ public:
     bool ok;
   };
 
+  basic_ostream<CharT, Traits>& operator<<(unsigned long long v);
+
 protected:
   basic_ostream(const basic_ostream& rhs) = delete;
 
@@ -92,31 +97,43 @@ template< class CharT, class Traits>
 basic_ostream<CharT,Traits>& 
 operator << (basic_ostream<CharT,Traits>& os, CharT ch)
 {
-  // TODO padding
-  typename basic_ostream<CharT,Traits>::sentry sentry(os);
-  if (sentry) {
-    //TODO try/catch
-    os.rdbuf() -> sputc(ch);
-  }
+//  try
+//  {
+    // TODO padding
+    typename basic_ostream<CharT,Traits>::sentry sentry(os);
+    if (sentry) {
+      os.rdbuf() -> sputc(ch);
+    }
+//  }
+//  catch(...)
+//  {
+//TODO    os.setstate(ios_base::badbit); // can throw the exception
+//  }
   return os;
 }	
 
-template<class Traits>
-basic_ostream<char, Traits>& 
-  operator << 
-    (basic_ostream<char,Traits>& os, 
-     ::types::basic_constexpr_string<char> str)
+template<class CharT, class Traits>
+basic_ostream<CharT, Traits>&
+//
+operator<< (
+    basic_ostream<CharT,Traits>& os, 
+    ::types::basic_constexpr_string<char> str
+)
 {
-  // TODO padding
-  typename basic_ostream<char,Traits>::sentry sentry(os);
-  if (sentry) {
-    //TODO try/catch
-    os.rdbuf() -> sputn(str);
-  }
+//  try
+//  {
+    // TODO padding
+    typename basic_ostream<CharT,Traits>::sentry sentry(os);
+    if (sentry) {
+      os.rdbuf() -> sputn(str);
+    }
+//  }
+//  catch(...)
+//  {
+//TODO    os.setstate(ios_base::badbit); // can throw the exception
+//  }
   return os;
 }	
-
-
 
 typedef basic_ostream<char> ostream;
 typedef basic_ostream<wchar_t> wostream;

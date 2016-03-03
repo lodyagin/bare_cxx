@@ -27,18 +27,18 @@ public:
   class facet
   {
   protected:
-	 explicit facet(std::size_t refs = 0)
-	 {
+    explicit facet(std::size_t refs = 0)
+    {
 		// TODO facet auto-deletion
 		// assert (refs != 0);
-	 }
+    }
 
     facet(const facet&) = delete;
-	 facet& operator = (const facet&) = delete;
-	 virtual ~facet() {};
+    facet& operator = (const facet&) = delete;
+    virtual ~facet() {};
   };
 };
 
-} // std
+} // namespace std
 
 #endif

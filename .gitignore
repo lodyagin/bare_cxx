@@ -2,6 +2,8 @@
 *#*
 *.a
 *.o
+*.out
+*.pdf
 *.pyc
 *.swp
 cmake_install.cmake
@@ -9,6 +11,7 @@ CMakeCache.txt
 d
 GPATH
 GRTAGS
+GSYMS
 GTAGS
 header
 hellocpp
