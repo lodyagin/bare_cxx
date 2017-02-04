@@ -32,12 +32,31 @@ inline void b_output_chars
        );
 }
 
+inline long b_input_chars
+  (char *buf, unsigned long nbr)
+{
+  register long rax asm ("rax") = 3; //sys_read
+  register int file asm ("rbx") = 0; // stdin
+  register const char* buf_ asm ("rcx") = buf;
+  register unsigned long n asm ("rdx") = nbr;
+  asm ("int $0x80" 
+       : "+r" (rax) : "r" (file), "r" (buf_), "r" (n)
+       );
+  return rax;
+}
+
 #else
 
-inline void b_output_chars
-  (const char *str, unsigned long nbr)
+inline void b_output_chars(const char *str, unsigned long nbr)
 {
   asm volatile ("call *0x00100018" : : "S"(str), "c"(nbr));
+}
+
+inline unsigned long b_input_chars(char *buf, unsigned long buf_size)
+{
+  unsigned long len;
+  asm volatile ("call *0x00100020" : "=c" (len) : "c"(buf_size), "D"(buf));
+  return len;
 }
 
 #endif
@@ -212,20 +231,45 @@ inline _array_iterator<T,N> operator -
 #endif
 
 /**
-  * Output to a terminal.
+  * Input/output to a terminal.
   */
 template <
   class CharT,
-  class Traits = std::char_traits<CharT>
+  class Traits = std::char_traits<CharT>,
+  std::size_t InBufSize = 64
 >
 class basic_streambuf
   : public std::basic_streambuf<CharT, Traits>
 {
-  typedef typename 
-    std::basic_streambuf<CharT, Traits>::char_type 
-    char_type;
+  typedef std::basic_streambuf<CharT, Traits> base;
+  typedef typename base::char_type char_type;
+  typedef typename base::traits_type traits_type;
+  typedef typename base::int_type int_type;
+  typedef typename base::off_type off_type;
 
 protected:
+  int_type underflow() noexcept override
+  {
+    if (this->gptr() != nullptr && this->egptr() > this->gptr()
+        )
+    {
+        return Traits::to_int_type(*(this->gptr()));
+    }
+    else
+    {
+      const auto offs = b_input_chars(in_buf, InBufSize);
+      typedef decltype(offs) offs_t;
+      _silent_assert(offs <= (offs_t) InBufSize);
+      if (offs <= 0)
+      {
+        this->setg(nullptr, nullptr, nullptr);
+        return Traits::eof();
+      }
+      this->setg(in_buf, in_buf, in_buf + offs);
+      return Traits::to_int_type(*(this->gptr()));
+    }
+  }
+
   std::streamsize xsputn(
 	 const char_type* s, 
 	 std::streamsize count
@@ -235,24 +279,38 @@ protected:
     b_output_chars(s, count);
 #else
     // *s can't be on stack
-	 for (auto i = count; i > 0; i--)
-	 {
-		ch_ = *s++;
-		b_output_chars(&ch_, 1);
-	 }
+    for (auto i = count; i > 0; i--)
+    {
+	ch_ = *s++;
+	b_output_chars(&ch_, 1);
+    }
 #endif
     return count;
   }
+
+  /*std::streamsize xsgetn(
+	 char_type* buf, 
+	 std::streamsize count
+  ) noexcept override
+  {
+  }*/
 
 private:
 #ifdef LINUX
   static char ch_;
 #endif
+
+  static char in_buf[InBufSize]; 
 };
 
+template <class CharT, class Traits, std::size_t InBufSize>
+char basic_streambuf<CharT, Traits, InBufSize>
+//
+::in_buf[InBufSize];
+
 #ifdef LINUX
-template <class CharT, class Traits>
-char basic_streambuf<CharT, Traits>::ch_;
+template <class CharT, class Traits, std::size_t InBufSize>
+char basic_streambuf<CharT, Traits, InBufSize>::ch_;
 #endif
 
 } // video

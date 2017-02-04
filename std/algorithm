@@ -24,10 +24,16 @@
 
 namespace std {
 
-template<class T> 
+template<class T>
 constexpr const T& min(const T& a, const T& b)
 {
-  return (a < b) ? a : b;
+    return (b < a) ? b : a;
+}
+
+template<class T>
+constexpr const T& max(const T& a, const T& b)
+{
+    return (b > a) ? b : a;
 }
 
 template< class InputIt, class OutputIt >
@@ -71,6 +77,7 @@ UnaryFunction for_each
   return std::move(f);
 }
 
+#if 0 
 // Swap version for scalars
 // FIXME move semantic, noexcept specification
 template<class T>
@@ -96,6 +103,7 @@ void swap( T2 (&a)[N], T2 (&b)[N])
 {
 }
 */
+#endif
 
 }
 

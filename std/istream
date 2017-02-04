@@ -1,0 +1,92 @@
+// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+/** 
+ * @file
+ *
+ * This file is a part of Bare C++ library. Bare C++
+ * library is a standard library specially designed for
+ * systems without memory protection like exokernel
+ * operating systems.
+ *
+ * @author Sergei Lodyagin <lodyagin@gmail.com>
+ */
+
+
+#ifndef _ISTREAM_HEADER
+#define _ISTREAM_HEADER
+
+#include <config.bare>
+#include <ios>
+#include <types/string.h>
+
+namespace std {
+
+template <
+  class CharT,
+  class Traits = char_traits<CharT>
+> 
+class basic_istream 
+  : virtual public basic_ios<CharT, Traits>
+{		
+public:
+  typedef CharT char_type;
+  typedef Traits traits_type;
+  typedef typename Traits::int_type int_type;
+  typedef typename Traits::pos_type post_type;
+  typedef typename Traits::off_type off_type;
+
+  explicit basic_istream
+    (std::basic_streambuf<CharT, Traits>* sb)
+  {
+    basic_ios<CharT, Traits>::init(sb);
+  }
+
+  // FIXME virtual
+  ~basic_istream() {}
+
+  // TODO
+  // operator=
+		
+  class sentry
+  {
+  public:
+    explicit sentry(std::basic_istream<CharT,Traits>& is, bool noskipws = false);
+
+    ~sentry() {}
+
+    explicit operator bool() const
+    {
+      return ok;
+    }
+
+  protected:
+    bool ok;
+  };
+
+  basic_istream<CharT, Traits>& operator>>(unsigned long & v);
+
+protected:
+  basic_istream(const basic_istream& rhs) = delete;
+
+  // TODO
+  // basic_istream( basic_istream&& rhs );
+
+  int_type get();
+  int_type peek();
+
+  basic_istream& unget();
+
+  streamsize gcount_ = 0;
+};
+
+template<class CharT, class Traits, std::int16_t N>
+basic_istream<CharT,Traits>& operator>>(
+  basic_istream<CharT,Traits>& st,
+  strings::basic_auto_string<CharT, N, Traits>& s
+);
+
+typedef basic_istream<char> istream;
+typedef basic_istream<wchar_t> wistream;
+
+}
+
+#endif

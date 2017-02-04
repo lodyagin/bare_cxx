@@ -31,7 +31,13 @@ class basic_ostream;
 class ios_base
 {
 public:
+  typedef uint8_t iostate;
   typedef uint16_t fmtflags;
+
+  static constexpr iostate goodbit = 0x00;
+  static constexpr iostate eofbit  = 0x01;
+  static constexpr iostate failbit = 0x02;
+  static constexpr iostate badbit  = 0x04;
   
   // 2 bits
   static constexpr fmtflags dec = 0x00;
@@ -73,6 +79,18 @@ public:
     return f;
   }
 
+  streamsize width() const
+  {
+    return width_;
+  }
+
+  streamsize width(streamsize new_width)
+  {
+    const streamsize old_width = width_;
+    width_ = new_width;
+    return old_width;
+  }
+
   locale getloc() const { return locale(); }
 
   class Init
@@ -87,6 +105,7 @@ protected:
 
 private:
   fmtflags flags_ = 0;
+  streamsize width_ = 0;
 }; 
 
 namespace {
@@ -117,8 +136,12 @@ public:
 
   bool good() const
   {
-    // TODO
-    return true;
+    return state_ == 0;
+  }
+
+  void setstate(iostate state)
+  {
+    state_ |= state;
   }
 
   basic_streambuf<CharT,Traits>* rdbuf() const
@@ -156,6 +179,7 @@ protected:
   }
 
 private:
+  iostate state_;
   basic_streambuf<CharT, Traits>* buf = nullptr;
   basic_ostream<CharT, Traits>* tied = nullptr;
 };

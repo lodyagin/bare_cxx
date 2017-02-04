@@ -14,10 +14,10 @@ basic_ostream<CharT, Traits>& basic_ostream<CharT, Traits>
         if (s)
         {
             // The output goes directly into out's streambuffer
-            using It = ::std::ostreambuf_iterator<CharT, Traits>;
+            using It = ostreambuf_iterator<CharT, Traits>;
             It it(*this);
 
-            it = ::bits::facets::locale_independent<CharT, It>::num_put
+            it = bits::facets::locale_independent::num_put<CharT, It>::facet
               . put(it, *this, ' ', v);
 
             if (it.failed())

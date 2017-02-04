@@ -1,4 +1,4 @@
-// -*-coding: mule-utf-8-unix; fill-column: 58 -*-
+// -*-coding: mule-utf-8-unix; fill-column: 58; mode:c++ -*-
 /** 
  * @file
  *
@@ -17,6 +17,7 @@
 
 #include <bits/locale.h>
 #include <bits/facets.h>
+#include <array>
 
 namespace std {
 

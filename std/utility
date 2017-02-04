@@ -1,4 +1,4 @@
-// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+// -*-coding: mule-utf-8-unix; fill-column: 59; mode:c++ -*-
 /** 
  * @file
  *
@@ -12,21 +12,45 @@
  *
  */
 
-#ifndef _UTILITY_HEADER_
-#define _UTILITY_HEADER_
+#ifndef _BARECXX_UTILITY_HEADER_
+#define _BARECXX_UTILITY_HEADER_
 
+#define __has_builtin(x) 0
+#define __has_feature(x) 0
+#define _ALIGNAS alignas
+#define _INLINE_VISIBILITY
+#define _LIBCPP_BEGIN_NAMESPACE_STD namespace std {
+#define _LIBCPP_CONSTEXPR constexpr
+#define _LIBCPP_CONSTEXPR_AFTER_CXX11 constexpr
+#define _LIBCPP_CONSTEXPR_AFTER_CXX14 constexpr
+#define _LIBCPP_END_NAMESPACE_STD }
+#define _LIBCPP_INLINE_VISIBILITY
+#define _LIBCPP_NO_CFI
+#define _LIBCPP_STD_VER 14
+#define _LIBCPP_TYPE_VIS
+#define _LIBCPP_TYPE_VIS_ONLY
+#define _NOEXCEPT noexcept
+#define _NOEXCEPT_ noexcept
+#define _VSTD std
+
+#include <bits/libcxx/utility>
+
+#if 0
 #include <type_traits>
 
 namespace std {
 
+struct piecewise_construct_t { };
+
+constexpr piecewise_construct_t piecewise_construct = std::piecewise_construct_t();
+
+
+#if 0
 template<class T>
 constexpr remove_reference_t<T>&& move(T&& t)
 {
   return static_cast<remove_reference_t<T>&&>(t); 
 }
-
-template<class T>
-typename add_rvalue_reference<T>::type declval();
 
 template<class T>
 T&& forward(typename std::remove_reference<T>::type& t)
@@ -39,8 +63,9 @@ T&& forward(typename std::remove_reference<T>::type&& t)
 {
   return static_cast<T&&>(t); // TODO check
 }
-
+#endif
 }
+#endif
 
 #endif
 

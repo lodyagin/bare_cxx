@@ -1,4 +1,4 @@
-// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+// -*-coding: mule-utf-8-unix; fill-column: 59; mode:c++ -*-
 /** 
  * @file
  *
@@ -16,7 +16,12 @@
 #define _IOSTREAM_HEADER
 
 #include <config.bare>
+#include <istream>
 #include <ostream>
+#include <locale>
+#include <types/string.h>
+#include <bits/ext_constr.h>
+#include <bits/stream_iterator.h>
 
 namespace std {
 
@@ -29,6 +34,45 @@ extern wostream wcerr;
 extern ostream clog;
 extern wostream wclog;
 
+extern istream cin;
+extern wistream wcin;
+
+template<class CharT, class Traits, std::int16_t N>
+basic_istream<CharT,Traits>& operator>>(
+  basic_istream<CharT,Traits>& st,
+  strings::basic_auto_string<CharT, N, Traits>& s
+)
+{
+  // FIXME try { (waits exceptions)
+  typename basic_istream<CharT, Traits>::sentry sentry(st, false);
+
+  if (!sentry)
+    return st;
+
+  auto* buf = st.rdbuf();
+  if (buf == nullptr)
+    return st;
+
+  CharT ch;
+  const auto w0 =  st.width();
+  const auto w = (w0 > 0) ? w0 : numeric_limits<decltype(w0)>::max();
+
+  s.clear();
+
+  auto& ctype_f = bits::facets::locale_independent::ctype<CharT>::facet; // TODO locales
+  for (
+    streamsize cnt = 0;
+    cnt < w
+    && ( ch = buf->sgetc() ) != Traits::eof()
+    && !ctype_f.is(ctype<CharT>::space, ch);
+    cnt++, buf->sbumpc()
+  )
+  {
+    s.push_back(ch);
+  }
+  return st;
 }
+
+} // namespace std
 
 #endif

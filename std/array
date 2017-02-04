@@ -379,17 +379,15 @@ public:
     return arr[N-1];
   }
 
-#ifdef _UNSAFE_CXX
-  T* data()
+  T* data() // mark: unsafe
   {
-   return &front();
+    return &front();
   }
 
-  const T* data() const
+  const T* data() const // mark: unsafe
   {
-   return &front();
+    return &front();
   }
-#endif
 
   constexpr bool empty() const
   {
@@ -540,6 +538,7 @@ bool operator>=( const array<T,N>& lhs,
   return ! operator< (lhs, rhs);
 }
 
+#if 0 // selects libcxx version
 template< size_t I, class T, size_t N >
 constexpr T& get( array<T,N>& a )
 {
@@ -560,6 +559,7 @@ constexpr const T& get( const array<T,N>& a )
   static_assert(I < N,"array: the index I is out of range");
   return a[I]; 
 }
+#endif
 
 //! The for_each specialization for array
 template <

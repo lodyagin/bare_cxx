@@ -1,0 +1,24 @@
+#ifndef _BARECXX_TUPLE_HEADER_
+#define _BARECXX_TUPLE_HEADER_
+
+#define __has_builtin(x) 0
+#define __has_feature(x) 0
+#define _ALIGNAS alignas
+#define _INLINE_VISIBILITY
+#define _LIBCPP_BEGIN_NAMESPACE_STD namespace std {
+#define _LIBCPP_CONSTEXPR constexpr
+#define _LIBCPP_CONSTEXPR_AFTER_CXX11 constexpr
+#define _LIBCPP_CONSTEXPR_AFTER_CXX14 constexpr
+#define _LIBCPP_END_NAMESPACE_STD }
+#define _LIBCPP_INLINE_VISIBILITY
+#define _LIBCPP_NO_CFI
+#define _LIBCPP_STD_VER 14
+#define _LIBCPP_TYPE_VIS
+#define _LIBCPP_TYPE_VIS_ONLY
+#define _NOEXCEPT noexcept
+#define _NOEXCEPT_ noexcept
+#define _VSTD std
+
+#include <bits/libcxx/tuple>
+
+#endif

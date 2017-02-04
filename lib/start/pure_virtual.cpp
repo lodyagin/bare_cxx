@@ -18,6 +18,8 @@
 extern "C" void __cxa_pure_virtual()
 {
   std::cerr << 
-    "<bare_c++lib>: a pure virtual function called.\n";
+    strings::fast_constant(
+      "<bare_c++lib>: a pure virtual function called.\n"
+    );
   std::abort();
 }

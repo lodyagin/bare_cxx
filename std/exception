@@ -40,9 +40,9 @@ public:
   }
 
 protected:
-  ::types::constexpr_string what_str;
+  ::strings::constexpr_string what_str;
 
-  exception(::types::constexpr_string what_)
+  exception(::strings::constexpr_string what_)
     : what_str(what_)
   {}
 };

@@ -10,6 +10,8 @@ cmake_minimum_required(VERSION 2.8)
 set(CMAKE_CXX_FLAGS 
   "-g -O0 -std=c++11 -m64 -Wall -nostdinc -nostdinc++ -nostdlib -fno-rtti")
 
+add_definitions(-DBARE_CXX)
+
 # The linux compilation is for debugging & testing
 if(LINUX)
   add_definitions(-DLINUX)

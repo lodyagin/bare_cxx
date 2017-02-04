@@ -20,4 +20,45 @@
 #include <bits/iterator.h>
 //#include <bits/stream_iterator.h>
 
+namespace std {
+
+namespace bits {
+
+template<class InputIt>
+constexpr typename std::iterator_traits<InputIt>::difference_type 
+distance(InputIt first, InputIt last, std::random_access_iterator_tag)
+{
+  return last - first;
+}
+
+template<class InputIt>
+constexpr typename std::iterator_traits<InputIt>::difference_type 
+distance(InputIt first, InputIt last, std::input_iterator_tag)
+{
+  typename std::iterator_traits<InputIt>::difference_type cnt = 0;
+  while (first++ != last)
+    cnt++;
+  return cnt;
+}
+
+} // namespace bits
+
+template<class InputIt>
+constexpr typename std::iterator_traits<InputIt>::difference_type 
+distance(InputIt first, InputIt last)
+{
+  static_assert(
+    bits::is_compatible(first, last),
+    "distance/2: the iterators are not compatible"
+  );
+
+  return bits::distance(
+    first,
+    last,
+    std::iterator_traits<InputIt>::iterator_category()
+  );
+}
+
+} // namespace std
+
 #endif

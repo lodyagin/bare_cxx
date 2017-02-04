@@ -112,12 +112,20 @@ operator << (basic_ostream<CharT,Traits>& os, CharT ch)
   return os;
 }	
 
-template<class CharT, class Traits>
+template<
+    class String,
+    class CharT = typename ::strings::traits<String>::value_type,
+    class Traits = typename ::strings::traits<String>::traits_type,
+    typename enable_if<
+	types::is_string<String>::value,
+	bool
+    >::type = false
+>
 basic_ostream<CharT, Traits>&
 //
 operator<< (
     basic_ostream<CharT,Traits>& os, 
-    ::types::basic_constexpr_string<char> str
+    const String& str
 )
 {
 //  try

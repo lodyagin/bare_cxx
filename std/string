@@ -174,7 +174,7 @@ namespace bits {
 
 template <
   class CharT,
-  class Traits = std::char_traits<CharT> //,
+  class Traits = std::char_traits<CharT>
 //  class Allocator = std::allocator<CharT>
 //  , uint32_t max_size_limit = 
 > 

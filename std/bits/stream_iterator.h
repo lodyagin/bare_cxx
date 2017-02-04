@@ -15,7 +15,9 @@
 #ifndef _BITS_STREAM_ITERATOR_H_
 #define _BITS_STREAM_ITERATOR_H_
 
+#include <istream>
 #include <ostream>
+#include <bits/ext_constr.h>
 
 namespace std {
 
@@ -77,6 +79,95 @@ private:
   streambuf_type* sbuf_;
   bool failed_ = false;
 };
+
+namespace bits {
+
+template<class CharT, class Traits>
+struct dummy_streambuf_instance
+{
+  static _externally_constructed<
+    dummy_streambuf<CharT, Traits>
+  > instance;
+};
+
+template<class CharT, class Traits>
+_externally_constructed<dummy_streambuf<CharT, Traits>> dummy_streambuf_instance<CharT, Traits>
+//
+::instance;
+
+
+} // namespace bits
+
+template <class CharT, class Traits = char_traits<CharT> >
+class istreambuf_iterator :
+  public iterator<
+    input_iterator_tag,
+    CharT,
+    typename Traits::off_type,
+    CharT*,
+    CharT
+  >
+{
+public:
+  typedef CharT char_type;
+  typedef Traits traits_type;
+  typedef basic_streambuf<CharT,Traits> streambuf_type;
+  typedef basic_istream<CharT,Traits> istream_type;
+
+public:
+  constexpr istreambuf_iterator() noexcept
+    : sbuf_(&bits::dummy_streambuf_instance<CharT, Traits>::instance)
+  {
+  }
+
+  istreambuf_iterator(istream_type& s) noexcept
+    : sbuf_(s.rdbuf())
+  {
+    //FIXME nullptr
+  }
+
+  istreambuf_iterator(streambuf_type* s) noexcept
+    : sbuf_(s)
+  {
+    //FIXME nullptr
+  }
+
+  char_type operator*() const noexcept
+  {
+    return sbuf_->sgetc();
+  }
+
+  istreambuf_iterator& operator++ ()
+  {
+    sbuf_->sbumpc();
+    return *this;
+  }
+  
+  istreambuf_iterator& operator++ (int)
+  {
+    sbuf_->sbumpc();
+    return *this;
+  }
+
+  bool equal(const istreambuf_iterator& it) const noexcept
+  {
+    return (*(*this) == Traits::eof()) == (*it == Traits::eof());
+  }
+
+  bool operator==(const istreambuf_iterator& it) const noexcept
+  {
+    return equal(it);
+  }
+  
+  bool operator!=(const istreambuf_iterator& it) const noexcept
+  {
+    return !equal(it);
+  }
+  
+private:
+  streambuf_type* sbuf_;
+};
+
 
 
 } // std

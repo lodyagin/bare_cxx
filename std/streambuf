@@ -41,35 +41,210 @@ public:
 
   int pubsync() { return sync(); }
 
+  streamsize in_avail() noexcept
+  {
+    if (gptr() != nullptr)
+    {
+      _silent_assert(egptr() != nullptr);
+      return egptr() - gptr();
+    }
+    else
+      return showmanyc();
+  }
+  
+  int_type sbumpc() noexcept
+  {
+    return uflow();
+  }
+
+  int_type sgetc() noexcept
+  {
+    if (!gptr() || !egptr() || gptr() >= egptr())
+      return underflow();
+    else
+      return *gptr();
+  }
+
+#if 0
+  int_type sungetc() noexcept
+  {
+    // TODO move to _invariant
+    _silent_assert(egptr() != nullptr);
+    _silent_assert(gptr() != nullptr);
+    _silent_assert(eback() != nullptr);
+    _silent_assert(gptr() <= egptr());
+    _silent_assert(gptr() >= eback()); 
+
+    if (gptr() > eback())
+      return *--gptr_;
+    pbackfail(); // return ?
+  }
+#endif
+
+  #if 0
+  // TODO unsafe
+  streamsize sgetn(char_type* s, streamsize count) noexcept
+  {
+    return xsgetn(s, count);
+  }
+  #endif
+  
   int_type sputc(char_type ch) noexcept
   {
     xsputn(&ch, 1);
     return Traits::to_int_type(ch);
   }
 
-  //! A version with a non-standard argument, we use a safe
+  //! A version with a non-standard argument, we can use a safe
   //! size-limted string instead of const char* + count.
-  streamsize sputn(
-	 ::types::basic_constexpr_string<CharT, Traits> s
-  ) noexcept
+  template<
+    class String,
+    typename std::enable_if<
+         types::is_string<String>::value
+      && arrays::has_o1_size<String>::value,
+      bool
+    >::type = false
+  >
+  streamsize sputn(const String& s) noexcept
   {
-    xsputn(s.data(), s.size());
-    return s.size();
+    using traits = strings::traits<String>;
+    const auto& str = traits::generic(s);
+    const auto size = str.size();
+    xsputn(str.data(), size);
+    return size;
   }
 
 protected:
-//  virtual locale imbue(const locale& loc) {}
+
+  basic_streambuf() noexcept
+  {
+    setg(nullptr, nullptr, nullptr);
+  }
 
   virtual int sync() { return 0; }
 
+  virtual streamsize showmanyc() noexcept
+  {
+    return 0;
+  }
+  
+  virtual int_type underflow() noexcept
+  {
+    return Traits::eof();
+  }
+
+  virtual int_type uflow() noexcept
+  {
+    int_type res = underflow();
+    if (res != Traits::eof())
+    {
+      _silent_assert(gptr() != nullptr);
+      ++gptr_;
+    }
+    return res;
+  }
+
+  virtual streamsize xsgetn(
+         char_type* s,
+         streamsize count
+  ) noexcept
+  {
+    _silent_assert(s != nullptr);
+    streamsize red_count = 0;
+    while (red_count < count && gptr() != nullptr && egptr() > gptr())
+    {
+      const auto n = std::min(count, egptr() - gptr());
+      Traits::copy(s, gptr(), n);
+      gptr_ += n;
+      red_count += n;
+      if (red_count < count)
+        uflow();
+    }
+    return red_count;
+  }
+  
   virtual streamsize xsputn(
 	 const char_type* s, 
-	 std::streamsize count
-  ) noexcept = 0; 
+	 streamsize count
+  ) noexcept = 0;
+
+  char_type* eback() const noexcept { return eback_; }
+  char_type* gptr()  const noexcept { return gptr_; }
+  char_type* egptr() const noexcept { return egptr_; }
+
+  void setg(char_type* gbeg, char_type* gcurr, char_type* gend) noexcept
+  {
+    eback_ = gbeg;
+    gptr_ = gcurr;
+    egptr_ = gend;
+  }
+  
+private:
+  char_type* eback_ = nullptr;
+  char_type* gptr_ = nullptr;
+  char_type* egptr_ = nullptr;
 };
 
 typedef basic_streambuf<char> streambuf;
 typedef basic_streambuf<wchar_t> wstreambuf;
+
+namespace bits {
+
+template <
+  class CharT,
+  class Traits = std::char_traits<CharT>
+>
+class dummy_streambuf
+{
+public:
+  typedef CharT char_type;
+  typedef Traits traits_type;
+  typedef typename Traits::int_type int_type;
+  typedef typename Traits::off_type off_type;
+
+  virtual ~dummy_streambuf() {}
+
+  int pubsync()
+  {
+    return 0;
+  }
+
+  streamsize in_avail() noexcept
+  {
+    return 0;
+  }
+  
+  int_type sbumpc() noexcept
+  {
+    return Traits::eof();
+  }
+
+  int_type sgetc() noexcept
+  {
+    return Traits::eof();
+  }
+
+  int_type sputc(char_type ch) noexcept
+  {
+    return Traits::to_int_type(ch);
+  }
+
+  template<
+    class String,
+    typename std::enable_if<
+         types::is_string<String>::value
+      && arrays::has_o1_size<String>::value,
+      bool
+    >::type = false
+  >
+  streamsize sputn(const String& s) noexcept
+  {
+    return strings::traits<String>::size(s);
+  }
+
+};
+
+} // namespace bits
 
 }
 

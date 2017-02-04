@@ -19,6 +19,40 @@
 
 namespace std {
 
+class ctype_base
+{
+public:
+  typedef uint16_t mask;
+
+  static constexpr mask space = 0x0001;
+};
+
+template<class CharT>
+class ctype;
+
+template<>
+class ctype<char> : public ctype_base, public locale::facet
+{
+public:
+  typedef char char_type;
+
+  explicit ctype(std::size_t refs = 0) noexcept
+  {
+    tab[32] = tab['\f'] = tab['\n'] = tab['\r'] = tab['\t'] = tab['\v'] = space;
+  }
+
+  bool is(mask m, char c) const noexcept
+  {
+    return tab[c] & m;
+  }
+  
+//protected: // FIXME
+  ~ctype() {}
+
+protected:
+  array<mask, 256> tab = {};
+};
+
 namespace bits {
 
 template<class T, class CharT, class OutputIt>
@@ -35,6 +69,13 @@ template <
   class OutputIt = ostreambuf_iterator<CharT>
 >
 class num_put : public locale::facet
+{};
+
+template <
+  class CharT,
+  class InputIt = istreambuf_iterator<CharT>
+>
+class num_get : public locale::facet
 {};
 
 template<>
@@ -71,8 +112,6 @@ protected:
   }
 };
 
-} // std
-
 namespace bits
 {
 
@@ -92,21 +131,36 @@ struct facets
     }
 #else
 
-  template<class CharT, class OutputIt>
   struct locale_independent
   {
-    static ::std::num_put<CharT, OutputIt> num_put;
+    template<class CharT, class OutputIt>
+    struct num_put
+    {
+      static ::std::num_put<CharT, OutputIt> facet;
+    };
+
+    template<class CharT>
+    struct ctype
+    {
+      static ::std::ctype<CharT> facet;
+    };
   };
 #endif
 };
 
 template<class CharT, class OutputIt>
 ::std::num_put<CharT, OutputIt> facets::
-  locale_independent<CharT, OutputIt>
+  locale_independent::num_put<CharT, OutputIt>
 //
-::num_put;
+::facet;
 
+template<class CharT>
+::std::ctype<CharT> facets::
+  locale_independent::ctype<CharT>
+//
+::facet;
 
 } // namespace bits
-    
+} // std
+
 #endif

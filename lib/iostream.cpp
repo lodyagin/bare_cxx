@@ -26,11 +26,12 @@ using namespace bits;
 
 _externally_constructed
   <video::basic_streambuf<char>>
-    _terminal_out_streambuf_inst;
+    _terminal_io_streambuf_inst;
 
 _externally_constructed<basic_ostream<char>> cout;
 _externally_constructed<basic_ostream<char>> cerr;
 _externally_constructed<basic_ostream<char>> clog;
+_externally_constructed<basic_istream<char>> cin;
 
 // Chec the compiler inserts a thread guard.
 // Answer http://stackoverflow.com/questions/10521263/standard-way-to-implement-initializer-like-ios-baseinit
@@ -45,15 +46,21 @@ ios_base::Init::Init()
 {
   if (nifty_counter++ == 0)
   {
-    new(&_terminal_out_streambuf_inst.m) 
+    new(&_terminal_io_streambuf_inst.m) 
       video::basic_streambuf<char>();
 
     new(&cout.m) ostream
-      (&_terminal_out_streambuf_inst.m);
+      (&_terminal_io_streambuf_inst.m);
     new(&cerr.m) ostream
-      (&_terminal_out_streambuf_inst.m);
+      (&_terminal_io_streambuf_inst.m);
     new(&clog.m) ostream
-      (&_terminal_out_streambuf_inst.m);
+      (&_terminal_io_streambuf_inst.m);
+    new(&cin.m) istream
+      (&_terminal_io_streambuf_inst.m);
+
+    new(&bits::dummy_streambuf_instance<char, std::char_traits<char>>
+         ::instance)
+         bits::dummy_streambuf_instance<char, std::char_traits<char>>();
   }
 }
 

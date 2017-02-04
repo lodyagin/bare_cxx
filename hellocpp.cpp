@@ -3,24 +3,22 @@
 #include <limits>
 #include <bits/constexpr_math.h>
 #include <bitset>
+#include <types/string.h>
 
 using namespace std;
-
-class np : public num_put<char> 
-{
-public:
-  np() : num_put(1) {}
-};
+using namespace strings;
 
 int main()
 {
-  // bitset<10> a("0101");
-
-  ostreambuf_iterator<char> out(cout);
-  np n;
+  auto_string<5> name;
 
   cout << "Hello World!\n";
-  cout << "I know different numbers.\n";
+  cout << "By the way, what is your name?\n";
+  cin >> name;
+  cout << "Hello " << name << "!\n";
+  if (name.overflow())
+    cout << "(sorry, I can remember only " << name.buf_size() - 1 << " last characters of your name)\n";
+  cout << "\nI know different numbers.\n";
 
   cout << "Million:\t" << std::bits::pow10x<6>::value << '\n';
   cout << "Billion:\t" << std::bits::pow10x<9>::value << '\n';
@@ -29,5 +27,13 @@ int main()
   cout << "Quintillion:\t" << std::bits::pow10x<18>::value << '\n';
   cout << "My biggest number is:\t"
        << numeric_limits<uintmax_t>::max() << '\n';
+
+#if 0       
+  uintmax_t yourth;
+  cout << "\nWhat is your biggest number? Please enter it here: ";
+  cin >> yourth;
+  cout << "I can read it as " << yourth << '\n';
+#endif
+
   cout << "Bye!\n";
 }
