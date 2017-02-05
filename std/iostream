@@ -59,7 +59,12 @@ basic_istream<CharT,Traits>& operator>>(
 
   s.clear();
 
+#ifndef _STD_LOCALES
   auto& ctype_f = bits::facets::locale_independent::ctype<CharT>::facet; // TODO locales
+#else  
+  auto& ctype_f = use_facet<ctype<CharT>>(st.getloc());
+#endif
+  
   for (
     streamsize cnt = 0;
     cnt < w

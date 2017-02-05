@@ -17,7 +17,9 @@
 
 #include <config.bare>
 #include <ios>
-#include <bits/facets.h>
+#ifndef _STD_LOCALES
+//#  include <bits/facets.h>
+#endif
 #include <bits/locale.h>
 #include <bits/stream_iterator.h>
 

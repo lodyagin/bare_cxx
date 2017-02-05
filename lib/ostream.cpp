@@ -1,4 +1,5 @@
 #include <ostream>
+#include <locale>
 
 namespace std
 {
@@ -17,7 +18,11 @@ basic_ostream<CharT, Traits>& basic_ostream<CharT, Traits>
             using It = ostreambuf_iterator<CharT, Traits>;
             It it(*this);
 
+#ifndef _STD_LOCALES
             it = bits::facets::locale_independent::num_put<CharT, It>::facet
+#else
+	    it = use_facet<num_put<CharT, It> >(this->getloc())
+#endif
               . put(it, *this, ' ', v);
 
             if (it.failed())

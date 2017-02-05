@@ -90,11 +90,13 @@ struct dummy_streambuf_instance
   > instance;
 };
 
+
+#if 0
 template<class CharT, class Traits>
 _externally_constructed<dummy_streambuf<CharT, Traits>> dummy_streambuf_instance<CharT, Traits>
 //
-::instance;
-
+::instance {};
+#endif
 
 } // namespace bits
 

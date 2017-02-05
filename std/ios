@@ -20,7 +20,11 @@
 #include <streambuf>
 #include <string>
 #include <algorithm>
-#include <bits/locale.h>
+#ifndef _STD_LOCALES
+#  include <bits/locale.h>
+#else
+#  include <bits/libcxx/__locale>
+#endif
 #include <bits/streamtypes.h>
 
 namespace std {

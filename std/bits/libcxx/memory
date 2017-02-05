@@ -623,7 +623,7 @@ void* align(size_t alignment, size_t size, void*& ptr, size_t& space);
 
 */
 
-#include <__config>
+//bare #include <__config>
 #include <type_traits>
 #include <typeinfo>
 #include <cstddef>
@@ -632,18 +632,20 @@ void* align(size_t alignment, size_t size, void*& ptr, size_t& space);
 #include <utility>
 #include <limits>
 #include <iterator>
-#include <__functional_base>
-#include <iosfwd>
+  //bare #include <__functional_base>
+  //bare #include <iosfwd>
 #include <tuple>
-#include <stdexcept>
-#include <cstring>
+  //bare #include <stdexcept>
+  //bare #include <cstring>
 
 #if !defined(_LIBCPP_HAS_NO_ATOMIC_HEADER)
-#  include <atomic>
+  //bare #  include <atomic>
 #endif
 
-#include <__undef_min_max>
-#include <__undef___deallocate>
+  //bare #include <__undef_min_max>
+  //bare #include <__undef___deallocate>
+
+#define _LIBCPP_ALWAYS_INLINE //bare
 
 #if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #pragma GCC system_header
@@ -674,6 +676,8 @@ _ValueType __libcpp_acquire_load(_ValueType const* __value) {
     return *__value;
 #endif
 }
+
+#if 0 // bare
 
 // addressof moved to <__functional_base>
 
@@ -3808,6 +3812,8 @@ void __throw_bad_weak_ptr()
 
 template<class _Tp> class _LIBCPP_TYPE_VIS_ONLY weak_ptr;
 
+#endif // bare
+
 class _LIBCPP_TYPE_VIS __shared_count
 {
     __shared_count(const __shared_count&);
@@ -3864,6 +3870,8 @@ public:
 private:
     virtual void __on_zero_shared_weak() _NOEXCEPT = 0;
 };
+
+#if 0 //bare
 
 template <class _Tp, class _Dp, class _Alloc>
 class __shared_ptr_pointer
@@ -5817,6 +5825,8 @@ struct __temp_value {
     };
 #endif
 
+#endif 
+			    
 _LIBCPP_END_NAMESPACE_STD
 
 #endif  // _LIBCPP_MEMORY

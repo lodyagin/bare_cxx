@@ -19,6 +19,7 @@
 
 namespace std {
 
+#ifndef _STD_LOCALES
 class ctype_base
 {
 public:
@@ -52,7 +53,7 @@ public:
 protected:
   array<mask, 256> tab = {};
 };
-
+  
 namespace bits {
 
 template<class T, class CharT, class OutputIt>
@@ -61,7 +62,7 @@ OutputIt num_put
     ios_base& str, 
     CharT fill, 
     T v );
-
+  
 } // namespace bits
 
 template <
@@ -70,7 +71,7 @@ template <
 >
 class num_put : public locale::facet
 {};
-
+  
 template <
   class CharT,
   class InputIt = istreambuf_iterator<CharT>
@@ -111,7 +112,7 @@ protected:
     return bits::num_put(out, str, fill, v);
   }
 };
-
+  
 namespace bits
 {
 
@@ -136,31 +137,29 @@ struct facets
     template<class CharT, class OutputIt>
     struct num_put
     {
-      static ::std::num_put<CharT, OutputIt> facet;
+          static ::std::num_put<CharT, OutputIt> facet;
     };
 
     template<class CharT>
     struct ctype
     {
-      static ::std::ctype<CharT> facet;
+          static ::std::ctype<CharT> facet;
     };
   };
 #endif
 };
 
+#if 0
 template<class CharT, class OutputIt>
 ::std::num_put<CharT, OutputIt> facets::
-  locale_independent::num_put<CharT, OutputIt>
+locale_independent::num_put<CharT, OutputIt>
 //
-::facet;
-
-template<class CharT>
-::std::ctype<CharT> facets::
-  locale_independent::ctype<CharT>
-//
-::facet;
-
+::facet {};
+#endif
+ 
 } // namespace bits
+
+#endif // _STD_LOCALES
 } // std
 
 #endif

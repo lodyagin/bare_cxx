@@ -18,6 +18,10 @@
 #include <cstdint>
 #include <new>
 
+#ifdef _STD_LOCALES
+#  include <bits/libcxx/memory>
+#endif
+
 namespace std {
 
 } // std

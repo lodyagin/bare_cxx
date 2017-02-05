@@ -303,11 +303,13 @@ private:
   static char in_buf[InBufSize]; 
 };
 
+#if 0
 template <class CharT, class Traits, std::size_t InBufSize>
 char basic_streambuf<CharT, Traits, InBufSize>
 //
 ::in_buf[InBufSize];
-
+#endif
+  
 #ifdef LINUX
 template <class CharT, class Traits, std::size_t InBufSize>
 char basic_streambuf<CharT, Traits, InBufSize>::ch_;

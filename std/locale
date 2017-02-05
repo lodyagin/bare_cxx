@@ -15,6 +15,8 @@
 #ifndef _LOCALE_HEADER_
 #define _LOCALE_HEADER_
 
+#ifndef _STD_LOCALES
+
 #include <bits/locale.h>
 #include <bits/facets.h>
 #include <array>
@@ -29,5 +31,9 @@ const Facet& use_facet(const std::locale& loc)
 }
 
 } // std
+#else
+#  include <bits/libcxx/locale>
+#endif
+
 
 #endif

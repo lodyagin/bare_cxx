@@ -4,6 +4,7 @@ include_directories(${BARE_METAL_OS_SOURCE_DIR}/programs)
 set(bare_c++lib_SOURCES
     csetjmp.s
     cstdlib.cpp
+    facets.cpp
     istream.cpp
     iostream.cpp
     new.cpp
@@ -11,7 +12,9 @@ set(bare_c++lib_SOURCES
     ostream.cpp
     start/atexit.cpp
     start/pure_virtual.cpp
-	 unwind/unwind.cpp
+    stream_iterator.cpp
+    unwind/unwind.cpp
+    video.cpp
 )
 
 add_library(bare_c++lib ${bare_c++lib_SOURCES})

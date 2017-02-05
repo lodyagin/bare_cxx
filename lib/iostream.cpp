@@ -72,4 +72,4 @@ ios_base::Init::~Init()
   }
 }
 
-}
+} // namespace std

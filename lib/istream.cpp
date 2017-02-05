@@ -19,7 +19,11 @@ basic_istream<CharT, Traits>::sentry::sentry(basic_istream<CharT,Traits>& is,
     tied->flush();
 
   if (!noskipws) {
+#ifndef _STD_LOCALES
     auto& ctype_f = bits::facets::locale_independent::ctype<CharT>::facet; // TODO locales
+#else
+    auto& ctype_f = use_facet<ctype<CharT>>(is.getloc());
+#endif
     char ch;
 
     for (;;) {

@@ -15,6 +15,7 @@
 #ifndef _BITS_LOCALE_H_
 #define _BITS_LOCALE_H_
 
+#ifndef _STD_LOCALES
 #include <cstddef>
 
 namespace std {
@@ -40,5 +41,6 @@ public:
 };
 
 } // namespace std
+#endif
 
 #endif
