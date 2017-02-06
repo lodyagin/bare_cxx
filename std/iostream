@@ -75,7 +75,12 @@ basic_istream<CharT,Traits>& operator>>(
 #else  
   auto& ctype_f = use_facet<ctype<CharT>>(st.getloc());
 #endif
-  
+
+  const auto max_size = s.max_size();
+  using size_type = decltype(max_size);
+
+  static_assert(sizeof(streamsize) >= sizeof(size_type), "check size types"); 
+
   for (
     streamsize cnt = 0;
     cnt < w
@@ -84,6 +89,11 @@ basic_istream<CharT,Traits>& operator>>(
     cnt++, buf->sbumpc()
   )
   {
+    if (__builtin_expect(cnt < 0 || cnt > max_size, 0))
+    {
+      st.setstate(ios_base::failbit);
+      return st;
+    }
     s.push_back(ch);
   }
   return st;
@@ -105,7 +115,53 @@ basic_istream<CharT,Traits>& getline(
   basic_istream<CharT,Traits>&& input,
   String& str,
   CharT delim
-);
+)
+{
+  // FIXME try { (waits exceptions)
+  typename basic_istream<CharT, Traits>::sentry sentry(input, true);
+
+  if (!sentry)
+    return input;
+
+  auto* buf = input.rdbuf();
+  if (buf == nullptr)
+    return input;
+
+  CharT ch;
+  bool eof = false;
+  bool isDelim = false;
+
+  str.clear();
+  const auto max_size = str.max_size();
+  using size_type = decltype(max_size);
+  static_assert(sizeof(streamsize) >= sizeof(size_type), "check size types"); 
+
+  for (
+    streamsize cnt = 0;
+    !(eof = ( ch = buf->sgetc() ) == Traits::eof())
+    && !(isDelim = Traits::eq(ch, delim));
+    ++cnt, buf->sbumpc()
+  )
+  {
+    if (__builtin_expect(cnt < 0 || cnt > max_size, 0))
+    {
+      input.setstate(ios_base::failbit);
+      return input;
+    }
+    str.push_back(ch);
+  }
+  if (eof)
+  {
+      input.setstate(ios_base::eofbit);
+  }
+  else 
+  {
+      _silent_assert(isDelim);
+      buf->sbumpc(); // consume the delimiter
+  }
+
+  return input;
+}
 
 } // namespace std
 
