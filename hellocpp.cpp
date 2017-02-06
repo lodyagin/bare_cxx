@@ -10,14 +10,12 @@ using namespace strings;
 
 int main()
 {
-  auto_string<5> name;
+  auto_string<100> name;
 
   cout << "Hello World!\n";
   cout << "By the way, what is your name?\n";
   cin >> name;
   cout << "Hello " << name << "!\n";
-  if (name.overflow())
-    cout << "(sorry, I can remember only " << name.buf_size() - 1 << " last characters of your name)\n";
   cout << "\nI know different numbers.\n";
 
   cout << "Million:\t" << std::bits::pow10x<6>::value << '\n';

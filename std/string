@@ -1,4 +1,4 @@
-// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+// -*-coding: mule-utf-8-unix; fill-column: 59; mode:c++ -*-
 /** 
  * @file
  *
@@ -220,6 +220,7 @@ class basic_string
 
 typedef basic_string<char> string;
 typedef basic_string<wchar_t> wstring;
+
 
 } // std
 

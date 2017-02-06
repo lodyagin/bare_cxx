@@ -37,10 +37,21 @@ extern wostream wclog;
 extern istream cin;
 extern wistream wcin;
 
-template<class CharT, class Traits, std::int16_t N>
+// must be in <string>, put here due to prevent circular
+// dependencies (on types/traits.h)
+template<
+  class String,
+  typename enable_if<
+       types::is_string<String>::value 
+    && !is_pointer<String>::value,
+    bool
+  >::type = false,
+  class CharT = typename strings::traits<String>::value_type,
+  class Traits = typename strings::traits<String>::traits_type
+>
 basic_istream<CharT,Traits>& operator>>(
   basic_istream<CharT,Traits>& st,
-  strings::basic_auto_string<CharT, N, Traits>& s
+  String& s
 )
 {
   // FIXME try { (waits exceptions)
@@ -55,7 +66,7 @@ basic_istream<CharT,Traits>& operator>>(
 
   CharT ch;
   const auto w0 =  st.width();
-  const auto w = (w0 > 0) ? w0 : numeric_limits<decltype(w0)>::max();
+  const auto w = (w0 > 0) ? w0 : s.max_size();
 
   s.clear();
 
@@ -77,6 +88,24 @@ basic_istream<CharT,Traits>& operator>>(
   }
   return st;
 }
+
+// must be in <string>, put here due to prevent circular
+// dependencies (on types/traits.h)
+template<
+  class String,
+  typename enable_if<
+       types::is_string<String>::value 
+    && !is_pointer<String>::value,
+    bool
+  >::type = false,
+  class CharT = typename strings::traits<String>::value_type,
+  class Traits = typename strings::traits<String>::traits_type
+>
+basic_istream<CharT,Traits>& getline(
+  basic_istream<CharT,Traits>&& input,
+  String& str,
+  CharT delim
+);
 
 } // namespace std
 

@@ -27,7 +27,7 @@ namespace std {
   */
 template <
   class CharT,
-  class Traits = std::char_traits<CharT>
+  class Traits = char_traits<CharT>
 >
 class basic_streambuf
 {
