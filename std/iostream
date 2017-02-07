@@ -112,7 +112,7 @@ template<
   class Traits = typename strings::traits<String>::traits_type
 >
 basic_istream<CharT,Traits>& getline(
-  basic_istream<CharT,Traits>&& input,
+  basic_istream<CharT,Traits>& input,
   String& str,
   CharT delim
 )

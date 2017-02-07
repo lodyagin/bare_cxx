@@ -1,4 +1,4 @@
-// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+// -*-coding: mule-utf-8-unix; fill-column: 59; mode:c++ -*-
 /** 
  * @file
  *
@@ -142,6 +142,20 @@ public:
   {
     return state_ == 0;
   }
+
+  bool eof() const
+  {
+    return state_ & eofbit;
+  }
+
+  bool fail() const
+  {
+    return state_ & (failbit | badbit);
+  }
+
+  bool operator!() const { return fail(); }
+
+  operator bool() const { return !fail(); }
 
   void setstate(iostate state)
   {
