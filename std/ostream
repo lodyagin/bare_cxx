@@ -1,4 +1,4 @@
-// -*-coding: mule-utf-8-unix; fill-column: 59 -*-
+// -*-coding: mule-utf-8-unix; fill-column: 59; mode:c++ -*-
 /** 
  * @file
  *
@@ -15,15 +15,12 @@
 #ifndef _OSTREAM_HEADER
 #define _OSTREAM_HEADER
 
-#include <config.bare>
 #include <ios>
-#ifndef _STD_LOCALES
-//#  include <bits/facets.h>
-#endif
 #include <bits/locale.h>
 #include <bits/stream_iterator.h>
 
-namespace _STD {
+namespace std 
+{
 
 template <
   class CharT,
@@ -86,7 +83,42 @@ public:
     bool ok;
   };
 
+  // TODO other types
+
+  basic_ostream<CharT, Traits>& operator<<(short v);
+  basic_ostream<CharT, Traits>& operator<<(unsigned short v);
+
+  basic_ostream<CharT, Traits>& operator<<(int v);
+  basic_ostream<CharT, Traits>& operator<<(unsigned int v);
+
+  basic_ostream<CharT, Traits>& operator<<(long v);
+  basic_ostream<CharT, Traits>& operator<<(unsigned long v);
+
+  basic_ostream<CharT, Traits>& operator<<(long long v);
   basic_ostream<CharT, Traits>& operator<<(unsigned long long v);
+
+  basic_ostream& operator<<(ios_base& (*func)(ios_base&) )
+    {
+      (*func)(*this);
+      return *this;
+    }
+
+  basic_ostream& operator<<(
+    basic_ios<CharT,Traits>& (*func)(basic_ios<CharT,Traits>&) 
+    )
+    {
+      (*func)(*this);
+      return *this;
+    }
+
+  basic_ostream& operator<<(
+    basic_ostream<CharT,Traits>& (*func)(basic_ostream<CharT,Traits>&)   
+    )
+    {
+      return (*func)(*this);
+    }
+
+  basic_ostream& put(char_type ch);
 
 protected:
   basic_ostream(const basic_ostream& rhs) = delete;
@@ -148,7 +180,18 @@ operator<< (
 typedef basic_ostream<char> ostream;
 typedef basic_ostream<wchar_t> wostream;
 
+template<class CharT, class Traits>
+basic_ostream<CharT, Traits>& 
+//
+endl(basic_ostream<CharT, Traits>& os)
+{
+  os.put('\n'); // TODO widen
+  os.flush();
+  return os;
 }
+
+
+} // namespace std
 
 #endif
 
