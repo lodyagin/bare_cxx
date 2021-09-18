@@ -1,0 +1,50 @@
+//-*-coding: mule-utf-8-unix; fill-column: 59; mode:c++ -*-
+/** 
+ * @file
+ *
+ * This file is a part of Bare Metal OS C++ library.
+ *
+ * @author Sergei Lodyagin <serg@kogorta.dp.ua>
+ * @copyright (C) 2021 Cohorte ICT
+ *
+ */
+
+#ifndef _BARE_IOPORTS_HEADER_
+#define _BARE_IOPORTS_HEADER_
+
+namespace bare {
+
+namespace ioport {
+
+// ioport has no fixed value also the same address for
+// input and output could be 2 different ports.
+// So the correct representation of an ioport is a pair of
+// input and output iterators.
+
+using address_t = uint16_t;
+
+template<IOWord Word>;
+struct input_iterator
+{
+	using word_type = Word;
+
+	address_t address;
+
+	Word operator*() noexcept;
+};
+
+template<IOWord Word>;
+struct output_iterator
+{
+	using word_type = Word;
+
+	address_t address;
+
+	proxy operator*() noexcept;
+};
+
+} // namespace ioport
+
+} // namespace bare
+
+#endif
