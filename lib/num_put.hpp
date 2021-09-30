@@ -52,11 +52,16 @@ OutputIt num_put
   std::array<CharT, max_len> buf;
   auto it = buf.end();
   auto num = v;
-  while (num > 0) 
-  {
-    *--it = Digits<CharT>::digit[num % base];
-    num /= base;
-  }
+	if (num == 0) {
+		*--it = '0';
+	}
+	else {
+		while (num > 0) 
+		{
+			*--it = Digits<CharT>::digit[num % base];
+			num /= base;
+		}
+	}
 
   return std::copy(it, buf.end(), out);
 }
