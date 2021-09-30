@@ -23,25 +23,143 @@ namespace ioport {
 
 using address_t = uint16_t;
 
-template<IOWord Word>;
-struct input_iterator
+namespace input
 {
+
+template<IOWord Word>;
+class port_iterator
+{
+public:
 	using word_type = Word;
-
-	address_t address;
-
+	using value_type = word_type;
+	
+	explicit constexpr port_iterator(address_t addr) : address(addr) {}
+	
 	Word operator*() noexcept;
+
+	port_iterator& operator++() noexcept { return *this; }
+
+	port_iterator operator++(int) noexcept { return *this; }
+
+private:
+	address_t address;
 };
 
 template<IOWord Word>;
-struct output_iterator
+class range_iterator
 {
+public:
 	using word_type = Word;
+	using value_type = port_iterator<word_type>;
 
+	constexpr range_iterator() : range_iterator(-1) {}
+	
+	value_type operator*() const noexcept;
+
+	range_iterator& operator++() noexcept
+	{
+		address += sizeof(word_type);
+		return *this;
+	}
+
+	range_iterator operator++(int) noexcept
+	{
+		range_iterator copy{*this};
+		++(*this);
+		return copy;
+	}
+
+	constexpr bool operator==(const range_iterator& o)
+	{
+		return address == o.address;
+	}
+	
+	constexpr bool operator!=(const range_iterator& o)
+	{
+		return !operator==(o);
+	}
+	
+protected:
 	address_t address;
 
-	proxy operator*() noexcept;
+	explicit constexpr range_iterator(address_t addr)
+		: address(addr)
+	{
+		address = address / sizeof(word_type) * sizeof(word_type);
+	}
 };
+
+// represents ioport in the range [From; To]
+template<address_t From, address_t To, IOWord Word>
+class range
+{
+public:
+	using word_type = Word;
+	using value_type = port_iterator<word_type>;
+	using const_iterator = range_iterator<word_type>;
+	using iterator = const_iterator;
+	using size_type = address_t;
+
+	static_assert(From <= To);
+	static_assert(From % sizeof(word_type) == 0);
+	static_assert(To % sizeof(word_type) == 0);
+	
+	static constexpr iterator begin()
+	{
+		return iterator{From};
+	}
+	
+	static constexpr iterator end()
+	{
+		return iterator{To + sizeof(word_type)};
+	}
+	
+	static constexpr const_iterator cbegin()
+	{
+		return begin();
+	}
+	
+	static constexpr const_iterator cend()
+	{
+		return end();
+	}
+
+	static constexpr size_type size()
+	{
+		return (To - From) / sizeof(word_type) + 1;
+	}
+
+	static constexpr size_type max_size()
+	{
+		return size();
+	}
+
+	static constexpr bool empty()
+	{
+		return size() == 0;
+	}
+};
+
+} // namespace input
+
+namespace output
+{
+
+template<IOWord Word>;
+struct port_iterator
+{
+public:
+	using word_type = Word;
+
+	explicit constexpr port_iterator(address_t addr) : address(addr) {}
+	
+	proxy operator*() noexcept;
+
+private:
+	address_t address;
+};
+
+} // namespace output
 
 } // namespace ioport
 
