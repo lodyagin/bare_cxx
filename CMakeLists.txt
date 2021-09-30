@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 2.8)
 #>)
 
 set(CMAKE_CXX_FLAGS 
-  "-g -O0 -std=c++11 -m64 -Wall -nostdinc -nostdinc++ -nostdlib -fno-rtti")
+  "-g -O0 -std=c++11 -m64 -Wall -nostdinc -nostdinc++ -nostdlib -fno-rtti -no-pie")
 
 add_definitions(-DBARE_CXX)
 

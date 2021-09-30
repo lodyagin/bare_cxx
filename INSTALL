@@ -10,6 +10,7 @@ BareMetal OS
 ------------
 
     cd bare_cxx
+		git submodule update --init
     rm -f CMakeCache.txt
     mkdir ../bare.metal
     cd ../bare.metal
