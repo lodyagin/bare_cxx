@@ -12,6 +12,11 @@
 #ifndef _BARE_IOPORTS_HEADER_
 #define _BARE_IOPORTS_HEADER_
 
+#include <cstdint>
+
+// FIXME
+#define IOWord class 
+
 namespace bare {
 
 namespace ioport {
@@ -21,12 +26,36 @@ namespace ioport {
 // So the correct representation of an ioport is a pair of
 // input and output iterators.
 
-using address_t = uint16_t;
+using address_t = std::uint16_t;
+
+namespace io_
+{
+
+template<IOWord Word>
+struct op;
+
+template<>
+struct op<std::uint8_t>
+{
+#ifdef LINUX
+	static std::uint8_t input(address_t address) noexcept
+	{
+		return 0;
+	}
+#else
+	std::uint8_t input(address_t address) noexcept
+	{
+		return 0; // FIXME not implemented
+	}
+#endif
+};
+
+} // namespace io_
 
 namespace input
 {
 
-template<IOWord Word>;
+template<IOWord Word>
 class port_iterator
 {
 public:
@@ -35,7 +64,10 @@ public:
 	
 	explicit constexpr port_iterator(address_t addr) : address(addr) {}
 	
-	Word operator*() noexcept;
+	word_type operator*() noexcept
+	{
+		return io_::op<word_type>::input(address);
+	}
 
 	port_iterator& operator++() noexcept { return *this; }
 
@@ -45,16 +77,21 @@ private:
 	address_t address;
 };
 
-template<IOWord Word>;
+template<IOWord Word>
 class range_iterator
 {
+	template<address_t From, address_t To, IOWord Word2>
+	friend class range;
 public:
 	using word_type = Word;
 	using value_type = port_iterator<word_type>;
 
 	constexpr range_iterator() : range_iterator(-1) {}
 	
-	value_type operator*() const noexcept;
+	value_type operator*() const noexcept
+	{
+		return value_type{address};
+	}
 
 	range_iterator& operator++() noexcept
 	{
@@ -83,9 +120,8 @@ protected:
 	address_t address;
 
 	explicit constexpr range_iterator(address_t addr)
-		: address(addr)
+		: address(addr / sizeof(word_type) * sizeof(word_type))
 	{
-		address = address / sizeof(word_type) * sizeof(word_type);
 	}
 };
 
@@ -142,10 +178,11 @@ public:
 
 } // namespace input
 
+#if 0
 namespace output
 {
 
-template<IOWord Word>;
+template<IOWord Word>
 struct port_iterator
 {
 public:
@@ -160,6 +197,7 @@ private:
 };
 
 } // namespace output
+#endif
 
 } // namespace ioport
 

@@ -51,6 +51,11 @@ add_executable(hellocpp
   hellocpp.cpp
   ${CRTEND} ${CRTN}
 )
+add_executable(iodump 
+  ${CRT0} ${CRTI} ${CRTBEGIN}
+  iodump.cpp
+  ${CRTEND} ${CRTN}
+)
 
 add_subdirectory(lib)
 add_subdirectory(tests)
@@ -60,4 +65,5 @@ include_directories(include)
 link_directories(${CMAKE_SOURCE_DIR}/lib)
 
 target_link_libraries(hellocpp bare_c++lib)
+target_link_libraries(iodump bare_c++lib)
 
